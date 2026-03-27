@@ -1,0 +1,20 @@
+{
+  "name": "pr-reporter-agents",
+  "version": "0.1.0",
+  "description": "PR pipeline that takes a company brief and produces tailored article briefs for 10 Israeli journalists. Features a PR router, brand guardian with anti-AI patterns, and reporter sub-agents that each write in a specific journalist's voice and analytical framework.",
+  "author": {
+    "name": "Ofer Blutrich",
+    "url": "https://github.com/blutrich"
+  },
+  "repository": "https://github.com/blutrich/PR---Reportes-Agents-",
+  "license": "MIT",
+  "keywords": [
+    "pr",
+    "public-relations",
+    "journalism",
+    "israel",
+    "content-creation",
+    "reporter-agents",
+    "media-relations"
+  ]
+}
