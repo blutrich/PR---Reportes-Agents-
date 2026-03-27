@@ -22,7 +22,7 @@ pr-router (ENTRY POINT)
   └── BRIEF_ONLY > just analyze the brief, suggest angles (no writing)
 ```
 
-## Workflow Chain
+## Workflow Chain (Three-Layer Quality)
 
 ```
 Company Brief (input)
@@ -33,21 +33,41 @@ shared-instructions (anti-AI patterns, tone rules, banned words)
   ↓
 ┌──────────────────────────────────────────────┐
 │ Reporter Agents (parallel)                    │
+│ Each produces: brief + "why this works" note  │
 │                                               │
 │ gad-lior     │ reporter-2  │ reporter-3  ... │
 │ (economy)    │ (tech)      │ (politics)      │
-└──────────────────────────────────────────────┘
-  ↓
-brand-guardian (score, fix anti-AI, enforce client tone)
-  ↓
-10 Article Briefs (output)
+└──────────────┬───────────────────────────────┘
+               ↓
+┌──────────────────────────────────────────────┐
+│ Layer 1: Reporter Guardian (per reporter)     │
+│ "Would THIS journalist pick up this story?"   │
+│ 10-point checklist specific to each reporter  │
+│ Auto-rewrite if < 9/10                        │
+└──────────────┬───────────────────────────────┘
+               ↓
+┌──────────────────────────────────────────────┐
+│ Layer 2: Brand Guardian (per client)          │
+│ Client tone of voice, banned words,           │
+│ competitor names, key messages                │
+└──────────────┬───────────────────────────────┘
+               ↓
+┌──────────────────────────────────────────────┐
+│ Layer 3: Anti-AI (always on)                  │
+│ Em dashes, AI vocabulary, rule-of-three,      │
+│ contrast framing, synonym cycling             │
+│ (from shared-instructions)                    │
+└──────────────┬───────────────────────────────┘
+               ↓
+10 Article Briefs + Strategy Side Notes (output)
 ```
 
 ## Agents
 
 | Agent | Model | Purpose |
 |-------|-------|---------|
-| `brand-guardian` | Sonnet | Quality gate: anti-AI patterns, tone, banned words |
+| `gad-lior-guardian` | Sonnet | Reporter guardian: does this brief match Gad Lior's instincts? |
+| `brand-guardian` | Sonnet | Client guardian: tone, banned words, key messages |
 
 ## Skills
 
