@@ -2,6 +2,7 @@
 name: gad-lior-guardian
 description: Reporter-specific guardian for Gad Lior briefs. Scores briefs on whether they would trigger Gad Lior's journalistic instincts. Auto-rewrites if below 9/10.
 model: sonnet
+memory: project
 tools:
   - Read
   - Edit
