@@ -1,0 +1,23 @@
+{
+  "skill_name": "gad-lior-pr-brief",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Write a PR brief for Gad Lior about RiseUp, the Israeli fintech that helps families manage their money. They have data showing customers save 1,100 shekels per month within 3 months. 25% of families in overdraft turned positive. They raised $50M at $130M valuation but laid off 50% of staff in April 2024. The brief should include a side note explaining the strategy.",
+      "expected_output": "A Hebrew PR brief with: headline number, news hook to current cost of living crisis, citizen framing, institutional question about banks, context brackets on numbers, quotable CEO quote with source reference, side note explaining strategy. Then guardian review scoring 9+/10.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "Write a PR brief for Gad Lior about a fictional Israeli company called PayWatch that just released data showing Israeli consumers pay 37% more for financial services than the OECD average. They have a report with specific data per bank. Include side note.",
+      "expected_output": "Brief should lead with the 37% gap number, connect to bank profits/regulation news, frame as consumer story, plant the question about why regulators allow this, include context brackets, have source references. Guardian should score 9+.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "Write a PR brief for Gad Lior about a tech startup that just raised $20M Series B for their AI coding assistant. No consumer angle, no economic data, pure tech story. Include side note.",
+      "expected_output": "This should be HARD for the Gad Lior skill. He's an economy journalist, not a tech reporter. The brief should either find an economic angle (tech jobs, tax implications, brain drain) or the guardian should flag that this story isn't a good fit for Gad Lior.",
+      "files": []
+    }
+  ]
+}

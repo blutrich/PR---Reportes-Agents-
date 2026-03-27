@@ -200,6 +200,8 @@ Keep it SHORT - this is not the story.]
 
 8. **The quote must be quotable.** Not "We are excited to announce our innovative platform." Instead: "80% מהזוגות שהשתמשו בשירות דיווחו שהלחץ הכלכלי בזוגיות שלהם ירד. זה לא רק כסף, זה שלום בית."
 
+9. **Every quote needs a clickable reference.** Gad Lior verifies. Every quote from a person, report, or data source must include a source: a URL, report name, or "(in interview with [outlet], [date])". Format: `"quote text" ([source](URL))` or `"quote text" (דוח שנתי 2025, עמ' 12)`. Unsourced quotes = deleted.
+
 ## What NOT to Include in a Brief for Gad Lior
 
 - Product feature lists (he doesn't care)
@@ -208,6 +210,27 @@ Keep it SHORT - this is not the story.]
 - English buzzwords (instant credibility loss)
 - Long company descriptions (two sentences max)
 - Generic quotes ("We're thrilled to..." = deleted)
+
+## Side Note: "Why This Works for Gad Lior"
+
+Every brief MUST include a side note section at the end, separated by a line. This is internal, not sent to the reporter. It explains to the PR team WHY the brief was crafted this way.
+
+```
+---
+## למה זה עובד לגד ליאור (הערה פנימית - לא לשליחה)
+
+**הנתון המרכזי שנבחר:** [which number and why it fits his style]
+**זווית האינטרס הציבורי:** [how we framed it as a citizen story, not company story]
+**השאלה שהוא ירצה לשאול:** [the institutional failure question we planted]
+**חיבור לאג'נדה שלו:** [which of his recurring themes this connects to -
+  cost of living / bank monopoly / weak vs strong / government promises]
+**חיבור לחדשות:** [what current news story this hooks into]
+**מה לא הכנסנו ולמה:** [what we deliberately left out to avoid turning him off]
+```
+
+This side note serves two purposes:
+1. The PR team understands the strategy behind each brief
+2. If the brief needs revision, the team knows what to preserve and what to change
 
 ---
 
