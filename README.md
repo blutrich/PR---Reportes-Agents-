@@ -400,10 +400,23 @@ INPUT: /new-launch {company_id} {product_id}
 │   Source 3: editorial_notes.md directives → writing_guidance.to_emphasize
 │   Save complete product_profile.json to launch folder
 │
-├── STEP 4 — Assemble Full Context Object ─────────────────────────────
-│   company_profile + product_profile + raw_gold
+├── STEP 4 — Assemble Context Strategist Input ────────────────────────
+│   Extract filtered slices from company_profile.json, product_profile.json,
+│   and raw_gold.json. Only fields relevant to world-context reasoning —
+│   see Agent 3 definition for the full field list and exclusion rationale.
 │
-├── STEP 5 — Context Strategist Agent → context_strategy.json
+├── STEP 5 — Context Strategist Agent → context_strategy.json ────────
+│   Input: filtered slices (not full files) + raw_gold
+│   Agent reasons about world forces → editorial strategy → 3 theses
+│   Output: context_strategy.json
+│
+│   GATE: Orchestrator validates context_strategy.json before proceeding:
+│     - Exactly 3 research theses present
+│     - Each thesis assigned to a unique slot (A, B, C)
+│     - Each thesis has at least 3 search queries
+│     - world_context_framing.core_tension is non-empty
+│   If validation fails → retry the agent once.
+│   If second attempt fails → stop and report to client.
 │
 ├── STEP 6 — Run IN PARALLEL ──────────────────────────────────────────
 │   ├── Researcher A (thesis A + queries from context_strategy.json)
@@ -485,39 +498,151 @@ would steal directly. Copy them verbatim. Do not write, analyze, or improve.
 
 **File:** `.claude/agents/context-strategist.md`
 **Runs:** After Full Context Object is assembled (Layer A + Layer B + raw_gold).
-**Tools:** None
+**Tools:** None — this agent is pure reasoning. It has no web access.
+
+**Why no web access:** This was a deliberate architectural decision. The Context
+Strategist's job is to *think* — to look at what the product solves and who it
+serves, and reason about what forces in the world would make this launch feel
+inevitable. Web searching is a different cognitive job that belongs to the
+Research Agents (Step 6). Giving this agent search access would tempt it to go
+shallow and wide instead of thinking deeply, and would duplicate the Researchers'
+role. In this system, search happens in exactly one place: the Research Agents.
 
 **Prompt law:** No company names, product names, industry terms, or
 client-specific language. All specifics enter via variables at runtime.
+
+**Input format:** The agent receives a deliberately filtered subset of the
+available data — not the full files. This is an intentional design choice.
+
+The Context Strategist's job is to reason about the *world*, not about the
+product's pricing, writing rules, or spokesperson. Passing the full files
+would flood the agent with details that pull its attention toward the product
+instead of toward the world forces that make the product relevant. Every field
+in the input was chosen because it helps the agent answer one question:
+"What is happening in the world that makes this product inevitable?"
+
+**From `product_profile.json` — the launch compass:**
+```
+{{launched_product_core_problem}}        ← What pain does this solve? This is the primary compass.
+{{launched_product_target_audience}}     ← Who feels this pain? Defines which world forces matter.
+{{top_level_issue}}                      ← The macro structural issue (e.g. cost of living).
+{{top_level_primary_subdomain}}          ← The specific slice most relevant here.
+{{launched_product_value_proposition}}   ← What changes for the user — helps gauge the gap in the world.
+{{launched_product_differentiation_claim}} ← What's structurally new — signals what didn't exist before.
+{{previous_product.switch_reason}}       ← Why the old approach failed — points to a shift in conditions.
+```
+
+**From `company_profile.json` — the company compass:**
+```
+{{company_mission}}                      ← Why this company exists — grounds the "why them" question.
+{{company_target_audience}}              ← Who the company serves broadly — may be wider than the launch audience.
+{{company_industry}}                     ← The sector — helps the agent reason about the right world domain.
+{{search_config.geo_focus}}              ← Where in the world this matters (e.g. "Local (Israel)").
+{{search_config.primary_geo}}            ← The specific geography (e.g. "IL").
+```
+
+**From `raw_gold.json`:**
+```
+{{raw_gold}}                             ← The verbatim high-impact sentences from the source material.
+```
+
+**What is deliberately excluded and why:**
+- `offering_structure`, `hard_stats`, pricing → product details that would
+  pull the agent toward describing the product instead of the world.
+- `writing_guidance`, `forbidden_words`, `tone_rules` → constraints for the
+  Brief Writer. Irrelevant to world-context reasoning and would add noise.
+- `functional_breakdown` → how the product works step by step. The strategist
+  needs to know *what problem it solves*, not *how it works*.
+- `spokesperson`, `speaking_style` → relevant to the brief, not to the world.
+- `stories_for_conversion`, `product_preferred_terms` → marketing assets
+  for downstream agents.
+- `gaps[]`, `limitations[]` → orchestrator and brief-writer concerns.
+- `launched_product_name`, `launched_product_one_liner` → the agent should
+  reason about the problem space, not the product's branding.
 
 **Job:** The core question this agent must answer is: **"What is happening in the
 world right now that makes this product launch feel inevitable, timely, and
 newsworthy?"**
 
-Before producing any output, reason deeply about the external world context —
-completely independently of the product itself. What structural forces, recent
-events, regulatory shifts, cultural tensions, or economic realities created the
-conditions this product addresses? These forces exist whether or not this product
-exists. A journalist would be covering them regardless. The product's job is to
-feel like the inevitable answer to forces already in motion.
+This is a reasoning job, not an information-retrieval job. The agent does not
+start by producing outputs. It starts by *thinking*.
 
-This world-context reasoning is the first-class output of this agent. It is saved
-explicitly and passed downstream — it is not a silent internal pre-step.
+**How the reasoning works:**
 
-Only after grounding in that world context, produce in a single coherent pass:
+This is one continuous chain of thought — not separate steps delegated to
+different agents. The agent begins by asking itself: "Given what this product
+solves and who it is for — what structural pressures, trends, or events in
+the world created the conditions this product addresses?" That question is
+the compass that guides everything else the agent produces.
+
+Consider the difference:
+- A product that helps gig workers save money → the agent should reason about
+  the growth of gig work, the savings gap in variable-income populations,
+  and the failure of traditional financial products to serve non-salaried workers.
+- An AI assistant for financial literacy → the agent should reason about the
+  cost of living crisis, rising financial illiteracy rates, and the growing
+  complexity of personal cash flow management.
+
+The product's core problem and target audience point the agent toward the right
+world forces. From there, the editorial angle emerges naturally — it is the most
+compelling frame for those forces. And the research theses operationalize that
+angle — they are the specific claims that, if proven with evidence, make the
+launch feel inevitable. This is why these are all one agent: the world context
+reasoning, the editorial strategy, and the research plan are not three separate
+cognitive jobs. They are one thought that builds on itself. Splitting them into
+separate agents would force artificial handoffs between reasoning that should
+stay connected.
+
+The world-context reasoning is a **first-class output** of this agent. It is
+saved explicitly in `context_strategy.json` and passed downstream to the Brief
+Writer. It is not a silent internal pre-step — it is the foundation everything
+else rests on.
+
+In a single coherent pass, the agent produces:
 1. **World context framing** — the structural forces, recent triggers, and core
    tension that make this launch newsworthy right now. This is the "why now"
    that the Brief Writer will use directly.
 2. **Editorial strategy** — primary story angle, journalist archetypes, strongest
    narrative hook, framing risks to avoid. All rooted in the world context above.
-3. **Research theses** — 3–5 specific, falsifiable claims about the world that,
-   if substantiated with evidence, make this launch feel inevitable and timely.
-   Each thesis must be rooted in the world context — not in the product's features.
+3. **Research theses** — exactly 3 specific, falsifiable claims about the world,
+   one per research lens (see below). Each thesis must be rooted in the world
+   context — not in the product's features.
 4. **Search queries** — 3–5 specific searchable queries per thesis, assigned to
    researcher slots A, B, and C, ready for the research agents to execute.
 
-Keeping all four jobs in one pass ensures the world-context reasoning stays
-coherent across every downstream output.
+Keeping all four outputs in one pass ensures the world-context reasoning stays
+coherent across every downstream output. The editorial angle emerges from the
+world context, and the theses operationalize the angle — they are phases of the
+same thought, not separate tasks.
+
+**The Three Research Lenses:**
+
+A journalist doesn't build a story from three pieces of the same kind of
+evidence. A complete story needs three structurally different layers that
+together form an arc:
+
+- **Lens A — Human Pain:** Who is suffering, and how? The emotional entry point.
+  Provable with hardship data, surveys, quality-of-life measures.
+- **Lens B — Broken Status Quo:** Why aren't existing solutions working? The
+  structural gap. Provable with failure rates, attrition data, expert criticism.
+- **Lens C — Emerging Trend:** What is changing right now that makes a new
+  approach possible? The "why now." Provable with adoption data, cross-industry
+  parallels, recent shifts.
+
+Together: people are hurting (A) → the current system is failing them (B) →
+conditions just changed to make a new approach inevitable (C). That is a
+complete journalistic case.
+
+Without these lenses, the agent risks producing three theses that all prove the
+same kind of thing — three variations of "the problem is bad" — which is
+repetition, not a story. The lenses force diversity of evidence, making the
+final brief structurally stronger.
+
+The lenses are a structural constraint, not a rigid template. The specific claim
+within each lens is the agent's creative judgment.
+
+**Why exactly 3 theses:** Each thesis maps to exactly one researcher agent and
+one lens. One thesis per slot, no ambiguity about routing.
 
 **Wave standard:** A good wave is one that makes the launched product maximally
 relevant — it sets the scene and answers the question "why launch this now?"
@@ -525,8 +650,8 @@ Every thesis generated here must clear this bar before it is assigned to a
 researcher. If a thesis cannot be connected to the product's timeliness, it
 is the wrong thesis.
 
-**Input:** Full Context Object (Layer A + Layer B + raw_gold)
 **Output:** `context_strategy.json`
+**Saved to:** `clients/{company_id}/launches/{product_id}/context_strategy.json`
 ```
 world_context_framing
   .structural_forces[]
@@ -547,6 +672,7 @@ editorial_strategy
 
 research_theses[]
   .thesis_id          ← "A", "B", or "C" — assigned researcher slot
+  .lens               ← "human_pain" (A), "broken_status_quo" (B), or "emerging_trend" (C)
   .claim              ← The specific falsifiable world-level claim
   .connection_to_launch ← Why proving this claim makes the launch feel inevitable
   .search_queries[]   ← 3–5 queries for the assigned researcher to execute
@@ -556,20 +682,80 @@ research_theses[]
 
 ### AGENTS 4A / 4B / 4C — Research Agents (Parallel)
 
-**Files:**
-- `.claude/agents/researcher-a.md`
-- `.claude/agents/researcher-b.md`
-- `.claude/agents/researcher-c.md`
+**File:** `.claude/agents/researcher.md` (one prompt, called three times)
+Each call receives a different thesis and lens from `context_strategy.json`.
 
 **Runs:** All three in parallel after Context Strategist.
 **Tools:** WebSearch, WebFetch
 
+**Why one file, not three:** The cognitive job is identical — search the web,
+read articles, extract evidence, synthesize a wave narrative. The only difference
+is what they're looking for, which is determined by the thesis and lens they
+receive as input. Maintaining three identical files would create sync problems
+when the prompt is improved.
+
+**Research lenses (passed as `{{lens}}` variable):**
+
+The lens does not change the researcher's mechanics — it still searches, reads,
+and extracts the same way. The lens changes what the researcher considers
+strong evidence.
+
+- **Researcher A — Lens: `human_pain` — Who is suffering, and how?**
+  Prioritizes: surveys and polls showing hardship, statistics on personal or
+  household impact, quality-of-life indicators, cost-of-living data, stress
+  or wellbeing measures, demographic breakdowns showing who is most affected.
+  Strong evidence: a government report showing that X% of a specific population
+  reports Y hardship. Weak evidence: an opinion piece saying "things are tough."
+
+- **Researcher B — Lens: `broken_status_quo` — Why aren't existing solutions working?**
+  Prioritizes: user attrition or churn rates for existing solutions, expert
+  criticism of current approaches, studies showing that a common method fails
+  to achieve its stated goal, industry reports on stagnation or failure, data
+  showing that despite available tools the problem persists or worsens.
+  Strong evidence: a study showing that users of a common approach still
+  experience the problem at the same rate. Weak evidence: a blog post
+  complaining about a competitor.
+
+- **Researcher C — Lens: `emerging_trend` — What is changing right now?**
+  Prioritizes: adoption data for new approaches, cross-industry parallels where
+  a similar shift already happened, regulatory changes enabling new models,
+  technology breakthroughs making something newly feasible, expert predictions
+  from credible sources, investment or funding data signaling market direction.
+  Strong evidence: a report showing that hybrid human+technology models in a
+  parallel industry improved outcomes by X%. Weak evidence: a startup press
+  release claiming to be "revolutionary."
+
 **Job:** Each agent receives one assigned thesis from `context_strategy.json`
-(assigned by slot: A, B, or C) along with its pre-generated search queries.
-The agent does not decide what to look for — that was determined by the Context
-Strategist. The agent's only job is to execute the assigned queries, find the
-strongest real-world evidence that substantiates the thesis, and return a
-`wave_candidate`.
+(assigned by slot: A, B, or C) along with its pre-generated search queries and
+its research lens. The agent does not decide what to look for — that was
+determined by the Context Strategist. The agent's job is to:
+1. Execute the assigned queries via WebSearch
+2. Read the top 3 results per query (WebFetch) — not just snippets
+3. Extract hard evidence: specific numbers, dates, sources, quotes
+4. Synthesize a cohesive **wave narrative** — what does all this evidence mean
+   together, told as a journalist would use it
+5. Return a `wave_candidate` with evidence details and citations
+
+The researcher also receives minimal product context — just enough to judge
+whether found evidence is relevant to the launch:
+- `{{launched_product_core_problem}}`
+- `{{launched_product_target_audience}}`
+- `{{top_level_issue}}`
+- `{{launched_product_differentiation_claim}}` — what is structurally new.
+  Especially important for Lens C (Emerging Trend): the researcher needs to
+  know what the new approach is in order to judge whether a trend it finds
+  actually supports the launch.
+
+**Evidence standard:** Key points must be hard evidence — specific numbers,
+percentages, dates, named sources. "The situation is getting worse" is not a
+key point. "Household debt rose 12% in 2025 according to Bank of Israel data"
+is. Every key point must have a URL. No key point without a source. No source
+without a key point.
+
+**If a thesis cannot be substantiated:** The researcher does NOT pivot to a
+different angle. It returns a wave_candidate with low confidence and a clear
+statement of what was searched and what was (not) found. The Wave Validator
+decides what to do with it.
 
 The Context Strategist is the strategist. The research agents are the field
 reporters sent to prove specific claims.
@@ -579,6 +765,43 @@ relevant — it sets the scene and answers the question "why launch this now?"
 When evaluating evidence, prioritize sources that make the product feel like
 the inevitable response to forces already in motion. Evidence that is merely
 interesting but does not sharpen the product's timeliness is weak evidence.
+
+**Input:** One thesis from `context_strategy.json` + minimal product context
+(see CLAUDE.md Step 6 for the full input assembly).
+**Output:** `wave_candidate_{A|B|C}.json`
+**Saved to:** `clients/{company_id}/launches/{product_id}/wave_candidate_{A|B|C}.json`
+
+```
+wave_candidate
+  .thesis_id            ← "A", "B", or "C"
+  .lens                 ← "human_pain", "broken_status_quo", or "emerging_trend"
+  .claim                ← The original claim, copied from input
+
+  .wave_title           ← Short descriptive title for the wave — the core finding.
+                          Written as a journalist would title a section.
+  .wave_narrative       ← 3–6 sentences. The cohesive story the evidence tells.
+                          References specific data points and sources. Written so
+                          a journalist could use it almost directly.
+  .core_tension         ← One sentence. The sharpest contradiction or pressure
+                          this evidence reveals — grounded in found evidence,
+                          not in reasoning alone.
+  .affected_groups[]    ← Specific populations affected. Precise demographics,
+                          segments, or roles the evidence names.
+
+  .evidence_details[]
+    .url                ← Full URL of the source article or report
+    .source_name        ← Name of the publication, institution, or organization
+    .date               ← Publication date (YYYY-MM-DD), null if unknown
+    .key_points[]       ← Hard facts from this source. Numbers, percentages,
+                          dates, named findings. One fact per entry.
+                          No interpretations, no summaries, no vague claims.
+                          Every key point must have a source URL — this is
+                          what flows to the brief as citations.
+
+  .confidence           ← "high", "medium", or "low"
+  .limitations          ← What this evidence does NOT prove, what gaps remain,
+                          or what caveats apply. One paragraph.
+```
 
 ---
 
@@ -642,9 +865,7 @@ project-root/
 │   │   ├── launch-compactor.md
 │   │   ├── raw-gold.md
 │   │   ├── context-strategist.md
-│   │   ├── researcher-a.md
-│   │   ├── researcher-b.md
-│   │   ├── researcher-c.md
+│   │   ├── researcher.md          ← one prompt, called 3× with different inputs
 │   │   ├── wave-validator.md
 │   │   └── brief-writer.md
 │   │

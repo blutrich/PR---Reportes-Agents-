@@ -402,10 +402,164 @@ and re-run downstream agents without repeating the extraction step.
 
 ---
 
-## Steps 4–10
+## STEP 4 — Assemble Context Strategist Input
+
+You perform this step yourself. No agent is called.
+
+The Context Strategist receives a filtered subset of the available data —
+not the full files. This is deliberate: the agent's job is to reason about
+the world, and fields like pricing, writing guidance, or spokesperson details
+would pull its attention toward the product instead of toward world forces.
+
+Read the following fields and assemble them as the agent's input:
+
+**From `product_profile.json`:**
+  - `launched_product_core_problem`
+  - `launched_product_target_audience`
+  - `top_level_issue`
+  - `top_level_primary_subdomain`
+  - `launched_product_value_proposition`
+  - `launched_product_differentiation_claim`
+  - `previous_product.switch_reason`
+
+**From `company_profile.json`:**
+  - `company_mission`
+  - `company_target_audience`
+  - `company_industry`
+  - `search_config.geo_focus`
+  - `search_config.primary_geo`
+
+**From `raw_gold.json`:**
+  - The full raw_gold content
+
+**Do NOT pass these fields to the Context Strategist:**
+  - `offering_structure`, `hard_stats`, pricing, service tracks
+  - `writing_guidance`, `forbidden_words`, `tone_rules`
+  - `functional_breakdown`
+  - `spokesperson`, `speaking_style`
+  - `stories_for_conversion`, `product_preferred_terms`
+  - `gaps[]`, `limitations[]`
+  - `launched_product_name`, `launched_product_one_liner`
+
+When calling the agent, state all values in plain language at the top of
+your message to the agent:
+
+"launched_product_core_problem is: [actual value]
+ launched_product_target_audience is: [actual value]
+ top_level_issue is: [actual value]
+ top_level_primary_subdomain is: [actual value]
+ launched_product_value_proposition is: [actual value]
+ launched_product_differentiation_claim is: [actual value]
+ previous_product_switch_reason is: [actual value]
+ company_mission is: [actual value]
+ company_target_audience is: [actual value]
+ company_industry is: [actual value]
+ geo_focus is: [actual value]
+ primary_geo is: [actual value]
+ raw_gold is: [actual value]"
+
+Never pass variable placeholder names. Always pass the actual values.
+If a field is null, state it explicitly: "previous_product_switch_reason is: null"
+
+---
+
+## STEP 5 — Context Strategist Agent
+
+Delegate to sub-agent: `context-strategist`
+
+Wait for output: `context_strategy.json`
+
+### Validation Gate
+
+Before proceeding to the Research Agents, validate `context_strategy.json`:
+
+1. `research_theses[]` contains exactly 3 entries
+2. Each thesis has a unique `thesis_id` — one "A", one "B", one "C"
+3. Each thesis has a `lens` field — "A" must be "human_pain", "B" must be "broken_status_quo", "C" must be "emerging_trend"
+4. Each thesis has at least 3 entries in `search_queries[]`
+5. `world_context_framing.core_tension` is non-empty
+
+If any check fails:
+  - First failure → retry the agent once with the same input
+  - Second failure → stop and report to the client:
+    "Context Strategist failed validation after two attempts.
+     Failed checks: [list which checks failed]"
+    Do not proceed.
+
+If all checks pass:
+  Save to: `clients/{company_id}/launches/{product_id}/context_strategy.json`
+  Move to Step 6.
+
+---
+
+## STEP 6 — Research Agents (Parallel)
+
+Run three instances of the `researcher` agent IN PARALLEL.
+Each instance receives one thesis from `context_strategy.json`.
+
+For each researcher, assemble the input as follows:
+
+**From `context_strategy.json`:**
+  - `thesis_id` — the thesis's `thesis_id` ("A", "B", or "C")
+  - `lens` — the thesis's `lens` value
+  - `claim` — the thesis's `claim`
+  - `connection_to_launch` — the thesis's `connection_to_launch`
+  - `search_queries` — the thesis's `search_queries[]`
+
+**From `product_profile.json` — minimal product context:**
+  - `launched_product_core_problem`
+  - `launched_product_target_audience`
+  - `top_level_issue`
+  - `launched_product_differentiation_claim`
+
+**From `company_profile.json` — geographic context:**
+  - `search_config.geo_focus`
+  - `search_config.primary_geo`
+
+**Do NOT pass these fields to the Researchers:**
+  - Any field not listed above from product_profile.json or company_profile.json
+  - writing_guidance, pricing, offering_structure, spokesperson, functional_breakdown
+  - raw_gold (the researchers don't need the source material — they search the web)
+
+When calling each agent, state all values in plain language at the top of
+your message to the agent:
+
+"thesis_id is: [actual value]
+ lens is: [actual value]
+ claim is: [actual value]
+ connection_to_launch is: [actual value]
+ search_queries are: [actual list]
+ launched_product_core_problem is: [actual value]
+ launched_product_target_audience is: [actual value]
+ top_level_issue is: [actual value]
+ launched_product_differentiation_claim is: [actual value]
+ geo_focus is: [actual value]
+ primary_geo is: [actual value]
+ company_id is: [actual value]
+ product_id is: [actual value]"
+
+Never pass variable placeholder names. Always pass the actual values.
+
+Wait for all three agents to complete.
+
+Save outputs to:
+  - `clients/{company_id}/launches/{product_id}/wave_candidate_A.json`
+  - `clients/{company_id}/launches/{product_id}/wave_candidate_B.json`
+  - `clients/{company_id}/launches/{product_id}/wave_candidate_C.json`
+
+If any researcher fails:
+  Report which researcher failed and what input it received.
+  Ask: "Researcher [X] failed. Retry or continue without that wave?"
+  Wait for answer before proceeding.
+
+Move to Step 7.
+
+---
+
+## Steps 7–10
 
 To be added as each agent is built and tested.
-Do not proceed beyond Step 3 until those steps are written here.
+Do not proceed beyond Step 6 until those steps are written here.
 
 ---
 
