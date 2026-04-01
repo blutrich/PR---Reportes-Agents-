@@ -556,10 +556,183 @@ Move to Step 7.
 
 ---
 
-## Steps 7–10
+## STEP 7 — Wave Validator Agent
 
-To be added as each agent is built and tested.
-Do not proceed beyond Step 6 until those steps are written here.
+Delegate to sub-agent: `wave-validator`
+
+Assemble the input as follows:
+
+**From the launch folder:**
+  - `wave_candidate_A.json` — full JSON content
+  - `wave_candidate_B.json` — full JSON content
+  - `wave_candidate_C.json` — full JSON content
+
+**From `product_profile.json`:**
+  - Full JSON content
+
+**From `context_strategy.json`:**
+  - Full JSON content
+
+When calling the agent, state all values in plain language at the top of
+your message to the agent:
+
+"wave_candidate_A is: [full JSON content]
+ wave_candidate_B is: [full JSON content]
+ wave_candidate_C is: [full JSON content]
+ product_profile is: [full JSON content]
+ context_strategy is: [full JSON content]
+ company_id is: [actual value]
+ product_id is: [actual value]"
+
+Wait for output: `validated_waves.json`
+
+### Validation Gate
+
+Before proceeding to the Brief Writer, validate `validated_waves.json`:
+
+1. `selected_waves[]` contains at least 1 entry
+2. At least 1 wave is classified as `lead`
+3. `evidence_context_for_brief_writer` is non-empty
+4. Every selected wave has a `match_score` >= 5
+
+If any check fails:
+  - First failure → retry the agent once with the same input
+  - Second failure → stop and report to the client
+
+If all checks pass:
+  Save to: `clients/{company_id}/launches/{product_id}/validated_waves.json`
+  Move to Step 8.
+
+---
+
+## STEP 8 — Brief Writer Agent
+
+Delegate to sub-agent: `brief-writer`
+
+Assemble the input as follows:
+
+**From the launch folder:**
+  - `validated_waves.json` — full JSON content
+  - `product_profile.json` — full JSON content
+  - `raw_gold.json` — full JSON content
+
+**From the client folder:**
+  - `company_profile.json` — full JSON content
+
+**From Step 0C (if available):**
+  - `relevant_user_stories[]` — or null if no stories
+
+When calling the agent, state all values in plain language at the top of
+your message to the agent:
+
+"validated_waves is: [full JSON content]
+ product_profile is: [full JSON content]
+ company_profile is: [full JSON content]
+ raw_gold is: [full JSON content]
+ user_stories is: [array or null]
+ company_id is: [actual value]
+ product_id is: [actual value]"
+
+Wait for output: `brief_final.md`
+
+Save to: `clients/{company_id}/launches/{product_id}/brief_final.md`
+
+If `brief_final.md` already exists → always overwrite without asking.
+
+Move to Step 9.
+
+---
+
+## STEP 9 — Reporter Article (Auto-Match + Write)
+
+This step is OPTIONAL. The client may choose to stop at Step 8 (generic brief).
+If the client wants a journalist-specific article, proceed.
+
+### 9A — Auto-Match Reporter
+
+Read `context_strategy.json` → `editorial_strategy.journalist_archetypes[]`.
+Read all available reporter skills from `.claude/skills/*/SKILL.md`.
+
+For each reporter skill, compare the reporter's beat against the archetypes.
+Select the best-matching reporter(s).
+
+Available reporters:
+- `gad-lior` — Economy, Budget, Policy, Finance Ministry, Bank of Israel
+- `shaul-amsterdamski` — Pensions, Healthcare, Education, State Budget, Government Accountability
+
+If no reporter matches any archetype → tell the client and skip Step 9.
+If multiple reporters match → ask the client which to use, or run all.
+
+### 9B — Write Reporter Article
+
+For each selected reporter, delegate to a general-purpose sub-agent.
+
+Before calling the agent:
+1. Read the reporter's skill file: `.claude/skills/{reporter_name}/SKILL.md`
+2. Read the reporter's profile: `reporters/{reporter_name}/profile.md`
+3. Read the shared anti-AI rules: `.claude/skills/shared-instructions/SKILL.md`
+
+When calling the agent, pass ALL of the following in plain language:
+
+"You are writing a reporter article. Here are your instructions:
+
+REPORTER VOICE RULES:
+[paste full content of the reporter's SKILL.md]
+
+REPORTER PROFILE:
+[paste full content of the reporter's profile.md]
+
+ANTI-AI RULES:
+[paste full content of shared-instructions SKILL.md]
+
+INPUTS:
+brief_final is: [content of brief_final.md]
+validated_waves is: [content of validated_waves.json]
+product_profile is: [content of product_profile.json]
+raw_gold is: [content of raw_gold.json]
+company_profile is: [content of company_profile.json]
+
+TASK:
+Write a draft article (not a brief) in this reporter's voice and format.
+Use the Article Mode instructions from the reporter skill.
+The brief provides the content foundation. The waves provide evidence.
+Save to: clients/{company_id}/launches/{product_id}/reporter_article_{reporter_name}.md"
+
+This approach injects the reporter skill content directly into the agent's
+prompt, since sub-agent skills cannot be loaded dynamically at runtime.
+
+Wait for output.
+Verify the article exists and meets the reporter's word count requirements.
+
+---
+
+## STEP 10 — Brand Guardian (Quality Gate)
+
+Delegate to sub-agent: `brand-guardian`
+
+Pass the following files for review:
+- The brief: `brief_final.md`
+- The article (if Step 9 ran): `reporter_article_{reporter_name}.md`
+- Company rules: `company_profile.json` → `writing_guidance`
+- Launch rules: `product_profile.json` → `writing_guidance`
+
+The Brand Guardian scores each document on a 10-point checklist:
+- **9-10:** APPROVED — ship it
+- **7-8:** AUTO-REVISE — fix issues, re-score
+- **Below 7:** REWRITE — major issues
+
+Save to: `clients/{company_id}/launches/{product_id}/guardian_review.md`
+
+If verdict is REVISE:
+  The guardian rewrites and re-scores (up to 2 attempts).
+  Save revised content alongside the review.
+
+If verdict is REWRITE:
+  Stop and report to the client. Ask for guidance.
+
+If verdict is APPROVED:
+  Pipeline complete. Tell the client:
+  "Brief and article are approved. Ready for delivery."
 
 ---
 

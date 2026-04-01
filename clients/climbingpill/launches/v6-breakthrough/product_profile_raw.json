@@ -1,0 +1,59 @@
+{
+  "company_id": "climbingpill",
+  "product_id": "v6-breakthrough",
+  "launched_product_name": "V6 Breakthrough",
+  "launched_product_one_liner": "A 90-day science-backed climbing program that uses 113 evidence-based protocols to help intermediate climbers break through plateaus and send V6.",
+  "launched_product_core_problem": "Climbers hit performance plateaus and cannot progress to advanced bouldering grades (V6+) despite continued effort, lacking structured, evidence-based training methodology.",
+  "launched_product_target_audience": "Intermediate to advanced recreational climbers who are stuck below V6 and seeking structured, scientific training to break through their bouldering plateau.",
+  "launched_product_value_proposition": "Guaranteed V6 bouldering breakthrough within 90 days through a structured program of 113 evidence-based protocols designed by an elite-level climber and physiotherapist.",
+  "launched_product_differentiation_claim": "Created by Israel's first 5.14c climber who holds an M.Sc in Physiotherapy — combining elite climbing achievement with clinical sports science expertise, delivered through 113 evidence-based protocols.",
+  "launched_product_features": [
+    "113 evidence-based training protocols",
+    "Climbing assessment methodology",
+    "Fingerboard training program",
+    "Injury prevention strategies",
+    "90-day structured progression timeline",
+    "Science-backed bouldering development system"
+  ],
+  "launched_product_proof_points": [
+    "Coach Ofer Blutrich is Israel's first 5.14c climber",
+    "M.Sc in Physiotherapy (PT)",
+    "Black Diamond Pro athlete",
+    "Featured in Rock and Ice magazine",
+    "113 evidence-based protocols (specific methodology count)"
+  ],
+  "launched_product_pricing": null,
+  "launched_product_availability": "Available online via climbingpill.ai (WooCommerce-based sales on oferblutrich.com suggests online purchase/enrollment)",
+  "previous_product": {
+    "exists": false,
+    "name": null,
+    "functional_description": null
+  },
+  "top_level_issue": "Climbing performance plateaus",
+  "top_level_primary_subdomain": "Bouldering grade progression to V6",
+  "writing_guidance": {
+    "framing_rules": [
+      "Frame as a science-backed, evidence-based system — not generic coaching",
+      "Position the coach's dual expertise (elite climber + physiotherapist) as the foundation of the method",
+      "Frame the 90-day timeline as a structured program with a clear endpoint, not open-ended training",
+      "Treat the 113 protocols as a proprietary system, not a collection of tips"
+    ],
+    "forbidden_words": [],
+    "must_include": [
+      "V6 breakthrough in 90 days",
+      "113 evidence-based protocols",
+      "Ofer Blutrich — Israel's first 5.14c climber",
+      "M.Sc PT credentials"
+    ],
+    "to_emphasize": [
+      "The intersection of elite climbing experience and clinical physiotherapy expertise",
+      "Evidence-based methodology versus trial-and-error training",
+      "Specific, measurable goal (V6) with a defined timeframe (90 days)",
+      "Injury prevention as an integrated part of performance training"
+    ]
+  },
+  "gaps": [
+    "launched_product_pricing"
+  ],
+  "extraction_confidence": "high"
+}

@@ -1,0 +1,267 @@
+{
+  "pipeline_evals": {
+    "description": "End-to-end and per-agent evaluation test cases for the PR Agent pipeline",
+    "test_methodology": "Three scenarios per agent: good_fit, stretch_fit, bad_fit"
+  },
+
+  "end_to_end": [
+    {
+      "id": "e2e-1-riseup",
+      "type": "good_fit",
+      "description": "Full pipeline on RiseUp financial advisory launch — Israeli fintech, Hebrew, strong data, clear zeitgeist connection",
+      "company_id": "riseup-israel",
+      "product_id": "financial-advisory",
+      "expected_outcome": "Complete pipeline through Step 10. Brief leads with economic data, not product. Article in Gad Lior voice. Guardian scores 9+.",
+      "assertions": [
+        "brief_final.md exists and is 200-300 words",
+        "brief subject line contains a number, not a company name",
+        "brief contains no forbidden words (תקציב, ריסון, צמצום, הידוק חגורה, חיסכון בכוח, ויתור, הגבלות)",
+        "brief contains no em dashes",
+        "brief mentions שיחת היכרות חינמית (must_include)",
+        "brief mentions שילוב AI ויועץ אנושי (must_include)",
+        "validated_waves.json has at least 1 lead wave with match_score >= 7",
+        "reporter_article contains at least 5 specific numbers with sources",
+        "guardian_review.md scores 9+ on brief"
+      ]
+    },
+    {
+      "id": "e2e-2-climbingpill",
+      "type": "stretch_fit",
+      "description": "Full pipeline on ClimbingPill V6 Breakthrough — English, niche audience (climbers), limited source material",
+      "company_id": "climbingpill",
+      "product_id": "v6-breakthrough",
+      "expected_outcome": "Pipeline completes but researchers may find thin evidence for niche climbing topic. Wave validator should flag low-confidence waves. Brief should still be coherent.",
+      "assertions": [
+        "brief_final.md exists",
+        "context_strategy.json has 3 theses with search queries",
+        "at least 1 wave_candidate has confidence 'medium' or 'high'",
+        "brief leads with a world problem, not ClimbingPill",
+        "brief contains no AI vocabulary (leverage, groundbreaking, seamless, etc.)"
+      ]
+    }
+  ],
+
+  "agent_evals": {
+    "context_strategist": [
+      {
+        "id": "cs-1-fintech",
+        "type": "good_fit",
+        "description": "Israeli fintech launching personal financial advisory with AI+human model",
+        "input_summary": "core_problem: financial anxiety from lack of transparency; target_audience: Israeli middle class; top_level_issue: cost of living; geo: Israel",
+        "expected_outcome": "3 theses with strong 'why now' connection. Search queries in Hebrew. One thesis per lens (human_pain, broken_status_quo, emerging_trend).",
+        "assertions": [
+          "research_theses has exactly 3 items",
+          "thesis A has lens human_pain",
+          "thesis B has lens broken_status_quo",
+          "thesis C has lens emerging_trend",
+          "each thesis has 3-5 search_queries",
+          "core_tension is one sentence and non-empty",
+          "no specific numbers or statistics fabricated (only directional claims)",
+          "search queries include Hebrew queries for Israeli geo"
+        ]
+      },
+      {
+        "id": "cs-2-climbing",
+        "type": "stretch_fit",
+        "description": "Niche English climbing coaching program — narrow audience, limited zeitgeist connection",
+        "input_summary": "core_problem: climbing plateaus; target_audience: intermediate climbers V3-V5; top_level_issue: climbing performance plateaus; geo: Global",
+        "expected_outcome": "Theses should find broader fitness/health/coaching angles. May struggle with 'why now' for a niche sport.",
+        "assertions": [
+          "research_theses has exactly 3 items",
+          "search queries are in English (global geo)",
+          "theses connect to broader trends, not just climbing"
+        ]
+      },
+      {
+        "id": "cs-3-nodata",
+        "type": "bad_fit",
+        "description": "Product with no clear problem — a luxury watch brand launching a new collection",
+        "input_summary": "core_problem: null; target_audience: luxury consumers; top_level_issue: null",
+        "expected_outcome": "Agent should still produce 3 theses but connection_to_launch will be weak. This tests whether the agent can work with minimal compass data.",
+        "assertions": [
+          "output is valid JSON",
+          "research_theses has exactly 3 items",
+          "no fabricated statistics"
+        ]
+      }
+    ],
+
+    "researcher": [
+      {
+        "id": "r-1-hebrew-local",
+        "type": "good_fit",
+        "description": "Research thesis about Israeli household financial stress — Hebrew queries, local data expected",
+        "input_summary": "thesis: financial stress in Israeli middle class; lens: human_pain; geo: Israel; queries in Hebrew",
+        "expected_outcome": "Finds Israeli survey data, Bank of Israel reports, local news articles. Evidence details have Hebrew sources with URLs.",
+        "assertions": [
+          "evidence_details has at least 3 sources",
+          "at least 1 source is from an Israeli publication (.co.il or Israeli org)",
+          "wave_narrative is in Hebrew",
+          "confidence is medium or high",
+          "limitations section is non-empty and honest"
+        ]
+      },
+      {
+        "id": "r-2-global-english",
+        "type": "stretch_fit",
+        "description": "Research thesis about AI in financial advisory — global trend, English queries",
+        "input_summary": "thesis: hybrid AI-human models emerging in fintech; lens: emerging_trend; geo: Global; queries in English",
+        "expected_outcome": "Finds international reports and trend data. Should still try to anchor with local Israeli examples.",
+        "assertions": [
+          "evidence_details has at least 2 sources",
+          "at least 1 source has date within last 18 months",
+          "no marketing pages or product announcements used as evidence"
+        ]
+      },
+      {
+        "id": "r-3-impossible",
+        "type": "bad_fit",
+        "description": "Research thesis that cannot be substantiated — looking for evidence that doesn't exist",
+        "input_summary": "thesis: climbing gyms have replaced therapy for anxiety treatment; lens: human_pain; queries about climbing therapy",
+        "expected_outcome": "Agent should report low confidence honestly, not fabricate evidence. Limitations should explain what was searched and not found.",
+        "assertions": [
+          "confidence is low",
+          "limitations explains what was searched",
+          "no fabricated URLs or made-up statistics"
+        ]
+      }
+    ],
+
+    "wave_validator": [
+      {
+        "id": "wv-1-strong-waves",
+        "type": "good_fit",
+        "description": "Three strong wave candidates with clear relevance to RiseUp launch",
+        "input_summary": "All 3 waves have high confidence, strong evidence, clear connection to product",
+        "expected_outcome": "All 3 selected. Lead wave has match_score 8+. evidence_context_for_brief_writer is a coherent narrative.",
+        "assertions": [
+          "selected_waves has 3 items",
+          "exactly 1 wave classified as lead",
+          "lead wave match_score >= 8",
+          "evidence_context_for_brief_writer is non-empty paragraph",
+          "no rejected_waves"
+        ]
+      },
+      {
+        "id": "wv-2-mixed-quality",
+        "type": "stretch_fit",
+        "description": "One strong wave, one medium, one weak — tests scoring differentiation",
+        "input_summary": "Wave A: high confidence, direct relevance. Wave B: medium confidence. Wave C: low confidence, tangential connection.",
+        "expected_outcome": "Wave A as lead. Wave B as supporting. Wave C either broadening or rejected. Scores should reflect quality difference.",
+        "assertions": [
+          "selected_waves has at least 2 items",
+          "lead wave is the high-confidence one",
+          "if Wave C is selected, its match_score is significantly lower"
+        ]
+      }
+    ],
+
+    "brief_writer": [
+      {
+        "id": "bw-1-hebrew-full",
+        "type": "good_fit",
+        "description": "Full Hebrew brief for RiseUp with all inputs available",
+        "input_summary": "validated_waves (3 waves), product_profile, company_profile, raw_gold — all in Hebrew",
+        "expected_outcome": "200-300 word Hebrew brief. 9 sections. Leads with world problem. No AI vocabulary. No forbidden words.",
+        "assertions": [
+          "brief is in Hebrew",
+          "word count 200-300 (core sections, excluding Key Facts and What We Can Offer)",
+          "subject line contains a number",
+          "company name not in first sentence of The Problem section",
+          "no em dashes anywhere in the document",
+          "no words from global_forbidden_words list",
+          "no AI vocabulary (leverage, groundbreaking, seamless, transformative, unprecedented)",
+          "no rule-of-three patterns",
+          "Spokesperson Quote matches a raw_gold entry verbatim",
+          "must_include items are present",
+          "Journalist Angles section has 2 or 4 angles (never 3, to avoid rule-of-three)"
+        ]
+      },
+      {
+        "id": "bw-2-english",
+        "type": "stretch_fit",
+        "description": "English brief for ClimbingPill — thinner data, niche audience",
+        "input_summary": "English inputs, fewer wave candidates, niche climbing topic",
+        "expected_outcome": "Brief still follows all rules but may be shorter on evidence. Should still lead with world problem.",
+        "assertions": [
+          "brief is in English",
+          "no em dashes",
+          "no AI vocabulary",
+          "leads with a problem, not the product"
+        ]
+      }
+    ],
+
+    "brand_guardian": [
+      {
+        "id": "bg-1-clean-brief",
+        "type": "good_fit",
+        "description": "Review a well-written brief that follows all rules",
+        "expected_outcome": "Score 9-10, APPROVED",
+        "assertions": [
+          "score >= 9",
+          "verdict is APPROVED",
+          "all 10 checks listed in results table"
+        ]
+      },
+      {
+        "id": "bg-2-ai-slop",
+        "type": "bad_fit",
+        "description": "Review a brief deliberately written with AI patterns — em dashes, rule-of-three, AI vocabulary",
+        "expected_outcome": "Score below 7, instant reject triggers hit",
+        "assertions": [
+          "score < 7",
+          "verdict is REWRITE",
+          "Anti-AI checks marked as FAIL",
+          "specific AI patterns identified in notes"
+        ]
+      }
+    ]
+  },
+
+  "reporter_skill_evals": {
+    "gad_lior": [
+      {
+        "id": "gl-1-economy",
+        "type": "good_fit",
+        "description": "Economic story about cost of living — Gad Lior's core beat",
+        "expected_outcome": "3 הערות format. Numbers as weapons. 'אנחנו' framing. Short sentences. Cause-effect chains.",
+        "assertions": [
+          "article is in Hebrew",
+          "contains הערה ראשונה, הערה שנייה, הערה שלישית",
+          "each הערה contains at least 1 specific number",
+          "uses אנחנו/עלינו framing (not הם)",
+          "no em dashes",
+          "no English buzzwords",
+          "800-1200 words"
+        ]
+      },
+      {
+        "id": "gl-2-tech",
+        "type": "bad_fit",
+        "description": "Pure tech story with no economic angle — not his beat",
+        "expected_outcome": "Should either find an economic angle or flag that this isn't a fit for Gad Lior",
+        "assertions": [
+          "either finds economic angle OR explicitly flags poor fit"
+        ]
+      }
+    ],
+    "shaul_amsterdamski": [
+      {
+        "id": "sa-1-social",
+        "type": "good_fit",
+        "description": "Story about financial literacy gap — combines data with human impact",
+        "expected_outcome": "עלות תועלת format. Personal opening. International comparison. Institutional failure. Hope at the end. 1200-1800 words.",
+        "assertions": [
+          "article is in Hebrew",
+          "opens with personal anecdote or historical analogy",
+          "contains international comparison with specific numbers",
+          "ends with hope or agency, not despair",
+          "1200-1800 words",
+          "no English buzzwords",
+          "no em dashes"
+        ]
+      }
+    ]
+  }
+}

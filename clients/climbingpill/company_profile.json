@@ -1,0 +1,148 @@
+{
+  "company_id": "climbingpill",
+  "company_name": "ClimbingPill",
+  "content_language": "English",
+  "company_description": "ClimbingPill is an elite climbing coaching platform founded by Ofer Blutrich, Israel's first 5.14c climber. It delivers structured, evidence-based training programs designed to break intermediate climbers through performance plateaus using 113 science-backed protocols that combine progressive training methodology with injury prevention.",
+  "company_mission": "To give every motivated recreational climber access to elite-level, science-based coaching that turns plateaus into breakthroughs.",
+  "company_values": [
+    "Evidence over tradition: every protocol is grounded in sports science, not gym lore",
+    "Structured progression: systematic training beats random sessions",
+    "Injury prevention as a core pillar, not an afterthought",
+    "Climber-first coaching: programs adapt to the individual, not the other way around",
+    "Transparency of method: climbers understand the why behind every session"
+  ],
+  "company_positioning": "The only climbing coaching program led by an elite 5.14c climber with a Master's degree in Physical Therapy, combining world-class climbing experience with clinical sports science to guarantee measurable grade breakthroughs.",
+  "company_differentiators": [
+    "Founded and coached by Israel's first 5.14c climber with M.Sc in Physical Therapy",
+    "113 evidence-based training protocols — not generic fitness programming",
+    "Integrated injury prevention built into every training cycle",
+    "Specific, measurable outcome promise: V6 in 90 days",
+    "Black Diamond Pro athlete credibility backing the methodology",
+    "Bridges the gap between elite climbing knowledge and accessible recreational coaching"
+  ],
+  "target_audience": {
+    "description": "Intermediate recreational climbers (typically V3-V5 range) who have hit a plateau and want to break through to V6 and beyond. They're motivated, train regularly, but lack a structured, science-based approach to progression. They're looking for expert guidance that combines training methodology with injury prevention.",
+    "segments": [
+      "Plateau climbers: V3-V5 boulderers who train consistently but stopped progressing",
+      "Injury-cautious climbers: those who have been injured or want to train hard without breaking down",
+      "Structure seekers: climbers who know random gym sessions aren't working and want a real program",
+      "Progression-driven recreationals: not competing, but deeply motivated to reach the next grade"
+    ]
+  },
+  "products_and_services": [
+    {
+      "name": "V6 Breakthrough Program",
+      "description": "90-day structured coaching program using evidence-based protocols to take climbers from the V3-V5 plateau to V6 and beyond",
+      "type": "core_offering"
+    },
+    {
+      "name": "Climbing Assessment",
+      "description": "Comprehensive evaluation of a climber's current strengths, weaknesses, and movement patterns to build a personalized training roadmap",
+      "type": "assessment"
+    },
+    {
+      "name": "Fingerboard Training Programs",
+      "description": "Structured hangboard protocols for finger strength development with built-in injury prevention",
+      "type": "training_program"
+    },
+    {
+      "name": "Injury Prevention Protocols",
+      "description": "Physiotherapy-informed protocols to keep climbers healthy through progressive training loads",
+      "type": "supplementary"
+    }
+  ],
+  "brand_voice": {
+    "tone": "Confident, knowledgeable, and direct. Speaks as a coach who has done the hard climbs and studied the science — not as a salesperson. Warm but no-nonsense. Uses precise climbing language naturally.",
+    "personality_traits": [
+      "Expert authority — speaks from lived elite climbing experience and clinical knowledge",
+      "Direct and actionable — gives clear guidance, not vague motivation",
+      "Science-grounded — references evidence and methodology, never hype",
+      "Passionate climber — genuine love for the sport comes through naturally",
+      "Approachable coach — elite credentials without elitist attitude"
+    ],
+    "communication_style": "Leads with specific outcomes and evidence. Uses climbing-specific terminology naturally (grades, send, project, flash). Explains the 'why' behind training decisions. Avoids generic fitness speak. Balances technical authority with coaching warmth."
+  },
+  "spokesperson": {
+    "name": "Ofer Blutrich",
+    "title": "Founder & Head Coach",
+    "bio": "Ofer Blutrich is Israel's first 5.14c sport climber, a Black Diamond Pro team athlete, and holds a Master's degree in Physical Therapy. He built ClimbingPill to bridge the gap between elite climbing performance knowledge and accessible coaching for recreational climbers. His approach fuses decades of high-level climbing experience with evidence-based sports science and clinical physiotherapy expertise. Featured in Rock and Ice magazine.",
+    "credentials": [
+      "M.Sc in Physical Therapy",
+      "Israel's first 5.14c sport climber",
+      "Black Diamond Pro team athlete",
+      "Featured in Rock and Ice magazine",
+      "Certified physiotherapist specializing in climbing injuries"
+    ],
+    "notable_achievements": [
+      "First Israeli climber to send 5.14c",
+      "Black Diamond Pro team membership",
+      "Developed 113 evidence-based climbing training protocols",
+      "Rock and Ice magazine feature",
+      "Built ClimbingPill methodology combining PT and elite climbing"
+    ]
+  },
+  "social_proof": {
+    "media_mentions": [
+      "Rock and Ice magazine"
+    ],
+    "partnerships": [
+      "Black Diamond (Pro athlete sponsorship)"
+    ],
+    "certifications": [
+      "M.Sc Physical Therapy"
+    ]
+  },
+  "writing_guidance": {
+    "global_tone_rules": [
+      "Always write as a coach-scientist: authoritative from experience, precise from education",
+      "Use climbing-specific language naturally — grades (V-scale, Yosemite Decimal), send, project, flash, crimp, sloper — never explain terms the target audience already knows",
+      "Lead with outcomes and evidence, not promises and hype",
+      "Be direct and specific: '113 protocols' is better than 'many methods'",
+      "Show the method, not just the result — readers should feel the structured thinking",
+      "Maintain warmth without softening authority — coach tone, not cheerleader tone",
+      "When referencing science, be concrete (name the principle or mechanism) rather than vaguely saying 'science-backed'",
+      "Write in active voice. Short sentences for impact. Longer sentences only when explaining methodology."
+    ],
+    "global_forbidden_words": [
+      "crush it",
+      "gains",
+      "shredded",
+      "beast mode",
+      "no pain no gain",
+      "fitfam",
+      "grind",
+      "hustle",
+      "level up",
+      "unlock your potential",
+      "transform your body",
+      "get ripped",
+      "swole",
+      "workout routine",
+      "gym rat",
+      "fitness journey",
+      "game changer",
+      "revolutionary",
+      "secret sauce",
+      "hack",
+      "biohack",
+      "limitless",
+      "insane results",
+      "guaranteed results"
+    ]
+  },
+  "source_urls": [
+    "https://climbingpill.ai",
+    "https://oferblutrich.com"
+  ],
+  "profile_created": "2026-03-31",
+  "_notes": {
+    "inferred_fields": [
+      "company_mission — synthesized from positioning and product promise; not a direct quote from the site",
+      "company_values — inferred from brand positioning, methodology emphasis, and PT background",
+      "target_audience.segments — elaborated from the provided audience description",
+      "brand_voice details — inferred from site copy tone, metadata language, and brand positioning",
+      "spokesperson.bio — assembled from multiple extracted data points across both URLs",
+      "writing_guidance — derived from observed brand voice patterns and audience expectations"
+    ]
+  }
+}

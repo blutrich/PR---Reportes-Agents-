@@ -1,6 +1,12 @@
-# Researcher
-
 ---
+name: researcher
+description: Finds real-world evidence to substantiate a research thesis. Executes pre-assigned search queries, reads full articles, and synthesizes wave narratives with hard evidence.
+tools: Read, Write, WebSearch, WebFetch, Bash, Glob, Grep
+model: sonnet
+maxTurns: 50
+---
+
+# Researcher
 
 ## Identity
 
