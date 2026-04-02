@@ -65,6 +65,15 @@ Persisted to memory. Reused for every future launch.
 
 ```
 company_name
+company_name_local
+  ← The company name in the local language (e.g. Hebrew transliteration).
+  ← Needed because the Research Agents must recognize the company in
+    local-language sources to filter out its own claims and marketing.
+    A company named "RiseUp" may appear as "רייזאפ" in Hebrew press —
+    without this field, the researcher would miss those mentions and
+    risk including the company's own narrative as independent evidence.
+  ← Populated by the Company Profiler from the company website.
+  ← Null if the company operates in a single language.
 company_mission
 company_value_proposition
 company_target_audience
@@ -809,20 +818,221 @@ wave_candidate
 
 **File:** `.claude/agents/wave-validator.md`
 **Runs:** After all three research agents complete.
-**Tools:** None
+**Tools:** None — pure judgment. Does not search the web, does not rewrite
+narratives, does not add evidence. It works with what the researchers found.
 
-**Job:** Score and filter all wave candidates. Remove weak or unsubstantiated
-waves. Classify remaining as Lead, Supporting, or Broadening.
+**Prompt law:** No company names, product names, industry terms, or
+client-specific language. All specifics enter via variables at runtime.
 
-**Wave standard:** A good wave is one that makes the launched product maximally
-relevant — it sets the scene and answers the question "why launch this now?"
-This is the primary scoring criterion. A wave with strong evidence that does
-not sharpen the product's timeliness must be scored lower than a wave with
-moderate evidence that directly answers "why now." Waves that fail this test
-are cut regardless of how interesting or well-sourced they are.
+**Job:** The Wave Validator has three jobs:
+1. **Score** each wave candidate on multiple dimensions
+2. **Cut** waves that fall below the quality threshold
+3. **Cluster** the surviving waves into a coherent story arc for the Brief Writer
 
-**Input:** All `wave_candidates[]` + Full Context Object
-**Output:** `validated_waves.json` (Layer C)
+This is reality framing, not marketing. The Validator is an editor who asks:
+"Is this evidence strong enough and relevant enough to anchor a journalist's
+story about why this launch matters right now?"
+
+---
+
+**The Thin Line — the most important validation criterion:**
+
+Each wave describes something happening in the world. It must never mention
+the product. But it must set the scene so that a journalist who reads it
+would independently conclude that something like this product needs to exist.
+
+This is a thin line:
+- A wave that mentions the product → **fails** (it's marketing, not journalism)
+- A wave about the world that has zero connection to what this product
+  solves → **fails** (it's interesting but irrelevant)
+- A wave about the world that makes a reader think "someone should build
+  exactly this" → **passes** (it sets the scene without selling)
+
+To judge this line, the Validator receives product context — not to inject
+into the wave, but to evaluate whether the wave naturally leads a reader
+toward the problem space this product addresses.
+
+---
+
+**Input — filtered product context for relevance judgment:**
+
+The Validator receives the same compass the other agents used:
+
+**From `product_profile.json`:**
+- `launched_product_core_problem`
+- `launched_product_target_audience`
+- `launched_product_value_proposition`
+- `launched_product_differentiation_claim`
+- `top_level_issue`
+- `top_level_primary_subdomain`
+
+**From `company_profile.json`:**
+- `company_industry`
+- `search_config.geo_focus`
+- `search_config.primary_geo`
+
+**From `context_strategy.json`:**
+- The full strategy output — so the Validator can compare what was asked
+  (the thesis) vs what was found (the wave candidate)
+
+**The three `wave_candidate` files:**
+- `wave_candidate_A.json`
+- `wave_candidate_B.json`
+- `wave_candidate_C.json`
+
+**What is deliberately excluded:** pricing, writing guidance, functional
+breakdown, spokesperson, offering structure, raw_gold — same exclusions as
+the other agents, same reason. Raw gold is for the Brief Writer, not for
+the Validator — it would add context load without helping the validation job.
+
+---
+
+**Scoring dimensions — for each wave (all on the same 0–10 scale):**
+
+- **Evidence strength** (0–10): Are the sources credible, recent, with hard
+  data? Multiple independent sources with concrete numbers score high.
+  Blog posts, vague claims, and aggregator sites score low.
+
+- **Story utility** (0–10): Does this evidence help a local journalist tell
+  this launch's story to a local audience? This is NOT a geographic origin
+  check — it's about whether the evidence serves the story. A foreign study
+  that proves a universal structural pattern (e.g. a meta-analysis showing
+  that education alone doesn't change behavior) scores high — because any
+  journalist can use it. A foreign study about a foreign-specific problem
+  that the local audience doesn't relate to scores low. A local source
+  about the target population scores highest. The question is always:
+  "Would a journalist writing for THIS audience actually cite this?"
+
+- **Narrative-evidence alignment** (0–10): Does the wave narrative accurately
+  reflect what the evidence actually says? Or does the narrative oversell,
+  cherry-pick, or draw conclusions the evidence doesn't support? The
+  Validator reads the evidence_details and checks whether the narrative
+  is honest. A narrative that claims a strong trend when the evidence shows
+  a weak signal scores low. A narrative that faithfully represents mixed
+  evidence scores high.
+
+- **"Why now" power** (0–10): Does this wave make the launch feel timely
+  and inevitable? This is the primary criterion. A wave with strong evidence
+  that doesn't sharpen the product's timeliness scores low. A wave with
+  moderate evidence that directly answers "why launch this now?" scores high.
+
+- **Thin line check** (0–10): Does the wave set the scene for the product
+  without mentioning it? Does it make a reader independently conclude that
+  this kind of solution is needed? Uses `core_problem`, `target_audience`,
+  `value_proposition`, and `differentiation_claim` to judge the connection.
+  A wave that mentions the product scores 0. A wave about the world with
+  zero connection to the product's problem space scores 0. A wave that
+  naturally leads a reader to the problem this product solves — without
+  ever naming it — scores 10.
+
+Total possible score: **50 points per wave.**
+
+---
+
+**Cut threshold:**
+
+Waves scoring below **38/50 (76%)** are rejected. A weak wave in the brief
+is worse than no wave — it undermines the credibility of the entire story.
+When a wave is rejected, the Validator must explain why, so the client can
+decide whether to adjust inputs and re-run or accept the gap.
+
+---
+
+**Cluster formation — shaping the story arc:**
+
+After scoring and cutting, the Validator forms a cluster from the surviving
+waves. The best case is a 3-wave arc. But 2 or even 1 is acceptable if the
+others didn't pass the threshold. The Validator must never force a weak wave
+into the cluster just to have three.
+
+For surviving waves, the Validator:
+1. **Assigns a role** to each wave:
+   - **Lead:** The emotional or factual entry point — what pulls the reader in.
+   - **Supporting:** Deepens the case — adds proof, consequence, or structural explanation.
+   - **Broadening:** Widens the frame — shows the shift, the trend, the "why now."
+
+   The natural mapping from lenses is: Human Pain → Lead, Broken Status Quo →
+   Supporting, Emerging Trend → Broadening. But the Validator may reclassify
+   if the evidence warrants it — the role depends on evidence strength, not
+   on which lens produced it.
+
+2. **Writes a continuity chain** — a causal arc that connects the waves:
+   "Wave A [specific content] → Wave B [specific content] → Wave C [specific content]."
+   This chain must use the actual wave content, never templated language.
+   It must be generic enough to work for any product in any domain.
+
+3. **Writes a cluster summary** — 2–4 sentences describing the combined
+   story the Brief Writer should tell. Written in newsroom style — concise,
+   factual, no marketing language.
+
+---
+
+**Output:** `validated_waves.json`
+**Saved to:** `clients/{company_id}/launches/{product_id}/validated_waves.json`
+
+The output carries forward the **full wave data** from each surviving wave —
+wave_narrative, evidence_details (URLs, key_points, source_name, date),
+core_tension, affected_groups. The Validator adds its scoring, classification,
+and cluster on top. It does not replace or strip the raw evidence — the Brief
+Writer needs it.
+
+```
+validated_waves
+  .cluster_summary        ← 2–4 newsroom-style sentences: the combined story arc
+  .continuity_chain       ← Causal chain using actual wave content: A → B → C
+  .waves_count            ← How many waves survived (1, 2, or 3)
+
+  .waves[]
+    .thesis_id            ← "A", "B", or "C"
+    .lens                 ← "human_pain", "broken_status_quo", or "emerging_trend"
+    .classification       ← "Lead", "Supporting", or "Broadening"
+    .status               ← "approved"
+
+    .score
+      .total              ← Sum out of 50
+      .evidence_strength  ← 0–10
+      .story_utility      ← 0–10
+      .narrative_alignment ← 0–10
+      .why_now_power      ← 0–10
+      .thin_line_check    ← 0–10
+
+    .reasoning_trace
+      .evidence_assessment       ← Why this score for evidence strength
+      .story_utility_assessment  ← Why this score — does the evidence serve this story for this audience?
+      .narrative_alignment_check ← Does the narrative match the evidence honestly?
+      .why_now_assessment        ← Does this wave answer "why launch now?"
+      .thin_line_assessment      ← Does it set the scene without selling?
+
+    ← FULL WAVE DATA carried forward from wave_candidate:
+    .claim
+    .wave_title
+    .wave_narrative
+    .core_tension
+    .affected_groups[]
+    .evidence_details[]
+      .url
+      .source_name
+      .date
+      .key_points[]
+    .confidence
+    .limitations
+
+  .rejected_waves[]
+    .thesis_id
+    .lens
+    .status               ← "rejected"
+    .score.total
+    .reject_reason        ← Clear explanation of why this wave was dropped
+```
+
+---
+
+**What this agent does NOT do:**
+- Does not rewrite wave narratives — that's the researcher's work
+- Does not search the web or add new evidence
+- Does not validate URLs by fetching them
+- Does not produce the brief — that's the Brief Writer's job
+- Does not receive writing guidance, pricing, or spokesperson data
 
 ---
 

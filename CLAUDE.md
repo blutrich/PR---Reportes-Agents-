@@ -512,9 +512,11 @@ For each researcher, assemble the input as follows:
   - `top_level_issue`
   - `launched_product_differentiation_claim`
 
-**From `company_profile.json` — geographic context:**
+**From `company_profile.json` — geographic and neutrality context:**
   - `search_config.geo_focus`
   - `search_config.primary_geo`
+  - `company_name`
+  - `company_name_local` (may be null if not in the profile)
 
 **Do NOT pass these fields to the Researchers:**
   - Any field not listed above from product_profile.json or company_profile.json
@@ -535,6 +537,8 @@ your message to the agent:
  launched_product_differentiation_claim is: [actual value]
  geo_focus is: [actual value]
  primary_geo is: [actual value]
+ company_name is: [actual value]
+ company_name_local is: [actual value or null]
  company_id is: [actual value]
  product_id is: [actual value]"
 
@@ -556,10 +560,84 @@ Move to Step 7.
 
 ---
 
-## Steps 7–10
+## STEP 7 — Wave Validator
+
+Delegate to sub-agent: `wave-validator`
+
+Assemble the input as follows:
+
+**From `product_profile.json`:**
+  - `launched_product_core_problem`
+  - `launched_product_target_audience`
+  - `launched_product_value_proposition`
+  - `launched_product_differentiation_claim`
+  - `top_level_issue`
+  - `top_level_primary_subdomain`
+
+**From `company_profile.json`:**
+  - `company_industry`
+  - `search_config.geo_focus`
+  - `search_config.primary_geo`
+
+**From `context_strategy.json`:**
+  - The full context_strategy.json content
+
+**The three wave candidate files:**
+  - Full content of `wave_candidate_A.json`
+  - Full content of `wave_candidate_B.json`
+  - Full content of `wave_candidate_C.json`
+
+**Do NOT pass these fields to the Wave Validator:**
+  - writing_guidance, pricing, offering_structure, spokesperson, functional_breakdown
+  - raw_gold (reserved for the Brief Writer)
+
+When calling the agent, state all values in plain language at the top of
+your message to the agent:
+
+"launched_product_core_problem is: [actual value]
+ launched_product_target_audience is: [actual value]
+ launched_product_value_proposition is: [actual value]
+ launched_product_differentiation_claim is: [actual value]
+ top_level_issue is: [actual value]
+ top_level_primary_subdomain is: [actual value]
+ company_industry is: [actual value]
+ geo_focus is: [actual value]
+ primary_geo is: [actual value]
+ context_strategy is: [full JSON content]
+ wave_candidate_A is: [full JSON content]
+ wave_candidate_B is: [full JSON content]
+ wave_candidate_C is: [full JSON content]
+ company_id is: [actual value]
+ product_id is: [actual value]"
+
+Never pass variable placeholder names. Always pass the actual values.
+
+Wait for output: `validated_waves.json`
+
+### Post-Validation Check
+
+After the Validator returns, check:
+
+1. At least 1 wave has `status: "approved"`
+2. All approved waves have `score.total` >= 38
+
+If no waves were approved:
+  Tell the client: "All three waves were cut by the Wave Validator.
+  Reasons: [list cut_reasons]. You may adjust inputs and re-run,
+  or review the wave candidates directly."
+  Do not proceed.
+
+If at least 1 wave was approved:
+  Save to: `clients/{company_id}/launches/{product_id}/validated_waves.json`
+  Tell the client how many waves survived and their classifications.
+  Move to Step 8.
+
+---
+
+## Steps 8–10
 
 To be added as each agent is built and tested.
-Do not proceed beyond Step 6 until those steps are written here.
+Do not proceed beyond Step 7 until those steps are written here.
 
 ---
 
