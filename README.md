@@ -318,25 +318,41 @@ Rules:
 
 ---
 
-### user_stories.md — Customer testimonials (optional)
+### user_stories_input.md — Customer testimonials, raw (optional)
 
-**Location:** `clients/{company_id}/launches/{product_id}/user_stories.md`
-**Purpose:** Real customer testimonials to support the brief narrative.
+**Location:** `clients/{company_id}/launches/{product_id}/user_stories_input.md`
+**Purpose:** Raw, unstructured customer testimonials in any format — WhatsApp
+messages, emails, survey responses, copied notes. The client pastes everything
+here without worrying about formatting.
 
-```markdown
----
-name: Customer Name
-anonymous: false
-job_title: Their role, if relevant
-story: The full text of what they said or wrote.
-key_quote: The single most impactful sentence from their story
-```
+**Processed by:** The **User Story Parser Agent** (Step 0C) reads this file,
+identifies story boundaries, extracts structured fields, and outputs
+`user_stories.json`. The client never needs to structure stories manually.
 
 Rules:
-- Each story block starts with `---` on its own line
-- `story` is the only required field — blocks without it are skipped
+- Any format is accepted — the parser handles it
 - Lines starting with `#` are comments and are ignored
-- If the file doesn't exist — skip silently, no prompting
+- If the file doesn't exist or is empty — skip silently, no prompting
+- User stories are optional — the pipeline runs without them
+
+**Structured output:** `user_stories.json`
+
+```json
+{
+  "stories_count": 1,
+  "stories": [
+    {
+      "name": "Customer name or Anonymous",
+      "anonymous": false,
+      "job_title": "Only if explicitly mentioned, null otherwise",
+      "story": "Full testimonial text, preserved in original language",
+      "key_quote": "The single most impactful sentence — a turning point",
+      "has_hard_numbers": false,
+      "impact_value": null
+    }
+  ]
+}
+```
 
 ---
 
@@ -373,9 +389,11 @@ INPUT: /new-launch {company_id} {product_id}
 │   Read file if exists → skip comment lines → collect as client_strategic_additions[]
 │   If file doesn't exist → skip silently
 │
-├── STEP 0C — Read user_stories.md ─────────────────────────────────────
-│   Read file if exists → parse story blocks → collect as relevant_user_stories[]
-│   If file doesn't exist or has no valid blocks → skip silently
+├── STEP 0C — Structure and read user stories ─────────────────────────
+│   If user_stories_input.md has content → run User Story Parser
+│   → save user_stories.json
+│   Read user_stories.json → collect as relevant_user_stories[]
+│   If no stories found → skip silently, pipeline continues
 │
 ├── STEP 1 — Company Profile check ────────────────────────────────────
 │   Does clients/{company_id}/company_profile.json exist?
@@ -500,6 +518,27 @@ would steal directly. Copy them verbatim. Do not write, analyze, or improve.
 
 **Input:** `{{raw_launch_text}}`
 **Output:** `raw_gold.json`
+
+---
+
+### AGENT 2C — User Story Parser
+
+**File:** `.claude/agents/user-story-parser.md`
+**Runs:** In Step 0C, only if `user_stories_input.md` has content.
+**Tools:** None (pure text parsing)
+
+**Job:** Parse raw, unstructured customer testimonials into clean structured
+JSON. Identifies story boundaries, extracts name, anonymity flag, job title,
+full story text, key quote, and hard-number indicators. Preserves the
+customer's original words — never rewrites, summarizes, or edits.
+
+The key_quote selection prioritizes transformation and turning points over
+generic praise. Stories with hard numbers (`has_hard_numbers: true`) are
+flagged for downstream prioritization, but stories without numbers are
+equally valid.
+
+**Input:** `{{raw_stories_text}}` from `user_stories_input.md`
+**Output:** `user_stories.json`
 
 ---
 
@@ -1074,6 +1113,7 @@ project-root/
 │   │   ├── company-profiler.md
 │   │   ├── launch-compactor.md
 │   │   ├── raw-gold.md
+│   │   ├── user-story-parser.md
 │   │   ├── context-strategist.md
 │   │   ├── researcher.md          ← one prompt, called 3× with different inputs
 │   │   ├── wave-validator.md
@@ -1091,7 +1131,8 @@ project-root/
 │               ├── launch_input.md            ← created on first run
 │               ├── product_input.md           ← created on first run
 │               ├── editorial_notes.md         ← created on first run
-│               ├── user_stories.md            ← created on first run
+│               ├── user_stories_input.md      ← created on first run, raw testimonials
+│               ├── user_stories.json          ← structured by User Story Parser
 │               ├── raw_launch_text.txt
 │               ├── raw_gold.json
 │               ├── product_profile_raw.json

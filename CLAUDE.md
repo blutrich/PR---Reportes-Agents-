@@ -34,7 +34,7 @@ clients/
             ├── launch_input.md        ← created on first run if missing
             ├── product_input.md       ← created on first run if missing
             ├── editorial_notes.md     ← created on first run if missing
-            ├── user_stories.md        ← created on first run if missing
+            ├── user_stories_input.md  ← created on first run if missing
             ├── raw_launch_text.txt
             └── (all other files added by agents as pipeline runs)
 ```
@@ -127,20 +127,14 @@ Use the Write tool to create all four template files inside the launch folder.
 # Example: Things to avoid —
 ```
 
-`clients/{company_id}/launches/{product_id}/user_stories.md`:
+`clients/{company_id}/launches/{product_id}/user_stories_input.md`:
 ```markdown
-# User Stories
-# Add real customer testimonials below.
-# Each story starts with --- on its own line.
-# All fields are optional except story.
-# Remove the # from template lines to activate a story.
-
-# ---
-# name: Customer Name (or leave blank for anonymous)
-# anonymous: false
-# job_title: Their role, if relevant
-# story: The full text of what they said or wrote. Can be multiple lines.
-# key_quote: The single most impactful sentence from their story
+# User Stories — Raw Input
+# Paste raw testimonial text below. Any format is fine —
+# WhatsApp messages, emails, survey responses, copied notes.
+# The system will parse and structure them automatically.
+#
+# No formatting required. Just paste everything.
 ```
 
 Then use the Write tool to create each file, then stop and tell the client:
@@ -151,7 +145,7 @@ Then use the Write tool to create each file, then stop and tell the client:
 - **launch_input.md** — add your sources (URLs, Google Doc, pasted notes)
 - **product_input.md** — set any field values you want to define authoritatively
 - **editorial_notes.md** — add angles or framing emphasis for the brief
-- **user_stories.md** — add customer testimonials (optional)
+- **user_stories_input.md** — paste customer testimonials in any format (optional)
 
 Fill them in and run `/new-launch {company_id} {product_id}` again."
 
@@ -221,28 +215,47 @@ Do not ask the client anything. Everything comes from the file.
 
 ---
 
-## STEP 0C — Read user_stories.md
+## STEP 0C — Structure and Read User Stories
 
-Read: `clients/{company_id}/launches/{product_id}/user_stories.md`
+This step has two parts: structuring raw stories (if provided), then
+reading the structured result.
+
+### Part 1 — Structure raw stories (if user_stories_input.md has content)
+
+Check: `clients/{company_id}/launches/{product_id}/user_stories_input.md`
+
+If the file does NOT exist or contains only comments/empty lines:
+  Skip silently. Move to Part 2.
+
+If the file EXISTS and has content (non-comment lines):
+  Delegate to sub-agent: `user-story-parser`
+
+  When calling the agent, state all values in plain language:
+
+  "raw_stories_text is: [full content of user_stories_input.md]
+   company_id is: [actual value]
+   product_id is: [actual value]"
+
+  Wait for output.
+  The agent saves:
+    `clients/{company_id}/launches/{product_id}/user_stories.json`
+
+### Part 2 — Read structured user stories
+
+Read: `clients/{company_id}/launches/{product_id}/user_stories.json`
 
 If the file does not exist — skip silently. Continue.
 
 If the file exists:
-  Parse each story block. A story block starts with `---` on its own line.
-  Skip any line starting with `#` — these are comments.
-  Skip empty lines.
-  For each story block, extract:
-    - `name` — the customer name (default "Anonymous" if missing)
-    - `anonymous` — true/false (default false if missing)
-    - `job_title` — optional
-    - `story` — the full testimonial text (required — skip block if missing)
-    - `key_quote` — optional
-
-  Collect all valid story blocks as `relevant_user_stories[]`.
+  Load the JSON. Extract the `stories[]` array.
+  Collect all valid stories as `relevant_user_stories[]`.
+  A valid story must have a non-empty `story` field.
   Store in memory for the Brief Writer step.
 
-  If the file exists but contains no valid story blocks — skip silently.
-  User stories are optional. Do not stop the pipeline if none are found.
+  If the file exists but contains no valid stories:
+    Tell the client: "No valid user stories found. The pipeline will
+    continue without user stories — they are optional."
+    Continue.
 
 ---
 
