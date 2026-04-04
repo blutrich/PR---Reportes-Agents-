@@ -51,6 +51,7 @@ Client-provided (use exactly as given — do not scrape for these):
 - `{{company_id}}`
 - `{{content_language}}`
 - `{{company_target_audience}}`
+- `{{company_anti_target_audience}}` — may be null if not provided
 - `{{spokesperson_name}}`
 - `{{spokesperson_title}}`
 
@@ -188,6 +189,8 @@ No markdown code fences.
   "company_value_proposition": "",
 
   "company_target_audience": "{{company_target_audience}}",
+
+  "company_anti_target_audience": "{{company_anti_target_audience}}",
 
   "company_industry": "",
 

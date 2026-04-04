@@ -24,7 +24,8 @@ Both must be lowercase and hyphenated.
 
 Triggers the full launch pipeline for an existing client.
 
-If the client does not have a company profile yet, run `/new-client` first.
+If the client does not have a company profile yet (`clients/{company_id}/company_profile.json`),
+the pipeline will stop at Step 1 and tell the client to run `/new-client {company_id}` first.
 
 ### First run — input files don't exist yet
 

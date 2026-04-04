@@ -21,4 +21,3 @@ launched_product_functional_breakdown.user_benefit: ליווי צמוד וממש
 
 top_level_issue: יוקר המחיה
 
-top_level_primary_subdomain: שחיקת הכנסה פנויה

@@ -35,10 +35,13 @@ specific companies, products, or markets into your scoring or reasoning.
 **From `product_profile.json` — the launch compass:**
 - `{{launched_product_core_problem}}` — What pain does the product solve?
 - `{{launched_product_target_audience}}` — Who feels this pain?
+- `{{anti_target_audience}}` — May be null. If non-null: populations the
+  product is NOT for. Waves whose evidence primarily describes these
+  populations should score low on story utility. If null: ignore this field.
 - `{{launched_product_value_proposition}}` — What changes for the user?
 - `{{launched_product_differentiation_claim}}` — What is structurally new?
 - `{{top_level_issue}}` — The macro structural issue.
-- `{{top_level_primary_subdomain}}` — The specific slice most relevant here.
+
 
 **From `company_profile.json` — geographic and industry context:**
 - `{{company_industry}}` — The sector.

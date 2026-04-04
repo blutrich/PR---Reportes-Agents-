@@ -28,6 +28,7 @@ This law has no exceptions.
 ```
 clients/
 └── {company_id}/
+    ├── company_input.md           ← created by /new-client on first run
     ├── company_profile.json
     └── launches/
         └── {product_id}/
@@ -62,8 +63,9 @@ to check whether the client has prepared their input files.
 
 ### Create launch folder
 
-Create the launch folder if it does not exist:
+Create the launch folder and subfolders if they do not exist:
 `clients/{company_id}/launches/{product_id}/`
+`clients/{company_id}/launches/{product_id}/briefs/`
 
 ### Check for launch_input.md
 
@@ -270,25 +272,10 @@ If it EXISTS:
   Move to Step 2.
 
 If it does NOT exist:
-  Tell the client: "No company profile found. Running Company Profiler."
-  Delegate to sub-agent: `company-profiler`
-
-  When calling the agent, explicitly state all values in plain
-  language at the top of your message to the agent:
-
-  "company_id is: [actual value]
-   content_language is: [actual value]
-   company_target_audience is: [actual value]
-   spokesperson_name is: [actual value]
-   spokesperson_title is: [actual value]
-   company_urls are: [actual list]"
-
-  Never pass variable placeholder names.
-  Always pass the actual values.
-
-  Wait for output.
-  Save output to: `clients/{company_id}/company_profile.json`
-  Move to Step 2.
+  Tell the client: "No company profile found.
+  Run `/new-client {company_id}` first to create the company profile,
+  then run `/new-launch` again."
+  Do not proceed.
 
 ---
 
@@ -341,7 +328,7 @@ If it EXISTS:
     - Overwrite the corresponding field in `product_profile_raw.json`
       with the plain string value — never wrap it in an object
     - If the field was previously an object with a "value" key
-      (such as top_level_issue or top_level_primary_subdomain) —
+      (such as top_level_issue) —
       replace the entire object with the plain string value
     - Add a sibling key `{field_name}_source` set to "client_defined"
     - For nested fields (e.g. previous_product.functional_description),
@@ -429,8 +416,12 @@ Read the following fields and assemble them as the agent's input:
 **From `product_profile.json`:**
   - `launched_product_core_problem`
   - `launched_product_target_audience`
+  - `anti_target_audience` (use `launched_product_anti_target_audience` from
+    product_profile.json if it exists; otherwise fall back to
+    `company_anti_target_audience` from company_profile.json; if neither
+    exists, state null)
   - `top_level_issue`
-  - `top_level_primary_subdomain`
+
   - `launched_product_value_proposition`
   - `launched_product_differentiation_claim`
   - `previous_product.switch_reason`
@@ -459,8 +450,9 @@ your message to the agent:
 
 "launched_product_core_problem is: [actual value]
  launched_product_target_audience is: [actual value]
+ anti_target_audience is: [actual value or null]
  top_level_issue is: [actual value]
- top_level_primary_subdomain is: [actual value]
+
  launched_product_value_proposition is: [actual value]
  launched_product_differentiation_claim is: [actual value]
  previous_product_switch_reason is: [actual value]
@@ -522,6 +514,7 @@ For each researcher, assemble the input as follows:
 **From `product_profile.json` — minimal product context:**
   - `launched_product_core_problem`
   - `launched_product_target_audience`
+  - `anti_target_audience` (same resolution as Step 4: product override → company default → null)
   - `top_level_issue`
   - `launched_product_differentiation_claim`
 
@@ -546,6 +539,7 @@ your message to the agent:
  search_queries are: [actual list]
  launched_product_core_problem is: [actual value]
  launched_product_target_audience is: [actual value]
+ anti_target_audience is: [actual value or null]
  top_level_issue is: [actual value]
  launched_product_differentiation_claim is: [actual value]
  geo_focus is: [actual value]
@@ -582,10 +576,11 @@ Assemble the input as follows:
 **From `product_profile.json`:**
   - `launched_product_core_problem`
   - `launched_product_target_audience`
+  - `anti_target_audience` (same resolution as Step 4)
   - `launched_product_value_proposition`
   - `launched_product_differentiation_claim`
   - `top_level_issue`
-  - `top_level_primary_subdomain`
+
 
 **From `company_profile.json`:**
   - `company_industry`
@@ -609,10 +604,11 @@ your message to the agent:
 
 "launched_product_core_problem is: [actual value]
  launched_product_target_audience is: [actual value]
+ anti_target_audience is: [actual value or null]
  launched_product_value_proposition is: [actual value]
  launched_product_differentiation_claim is: [actual value]
  top_level_issue is: [actual value]
- top_level_primary_subdomain is: [actual value]
+
  company_industry is: [actual value]
  geo_focus is: [actual value]
  primary_geo is: [actual value]
@@ -647,10 +643,129 @@ If at least 1 wave was approved:
 
 ---
 
-## Steps 8–10
+## STEP 8 — Brief Writer
 
-To be added as each agent is built and tested.
-Do not proceed beyond Step 7 until those steps are written here.
+This is a critical milestone in the pipeline. The Brief Writer produces the
+primary deliverable, saved to the `briefs/` subfolder within the launch folder.
+
+### Assemble Brief Writer Input
+
+The Brief Writer receives data from multiple files. You assemble the input
+yourself — do not pass full files. Pass the specific fields listed below.
+
+**From `product_profile.json`:**
+  - `launched_product_name`
+  - `launched_product_one_liner`
+  - `launched_product_core_problem`
+  - `launched_product_target_audience`
+  - `anti_target_audience` (same resolution as Step 4)
+  - `launched_product_value_proposition`
+  - `launched_product_differentiation_claim`
+  - `launched_product_functional_breakdown` (both `functional_description`
+    and `user_benefit`)
+  - `launched_product_offering_structure` (full: service_tracks[] + payment_flexibility)
+  - `previous_product` (full object if non-null, or explicitly state null)
+  - `top_level_issue`
+
+  - `writing_guidance` (full: forbidden_words, global_tone_rules, framing_rules,
+    must_include, to_emphasize)
+
+**From `company_profile.json`:**
+  - `company_name`
+  - `company_mission`
+  - `company_industry`
+  - `spokesperson.name`
+  - `spokesperson.title`
+  - `spokesperson.speaking_style`
+
+**From `validated_waves.json`:**
+  - The full validated_waves content (cluster_summary, continuity_chain,
+    waves_count, and all approved waves with their narratives, evidence_details,
+    core_tensions, affected_groups, classifications)
+
+**From `raw_gold.json`:**
+  - Only the `text` values from each entry — the verbatim sentences.
+    Do not pass `source`, `type`, `strength`, or `usage_note` metadata.
+    Extract as a flat list of strings.
+
+**From `user_stories.json` (if it exists):**
+  - The full `stories[]` array
+  - If the file does not exist or contains no valid stories, state explicitly:
+    "user_stories is: null"
+
+**Do NOT pass these to the Brief Writer:**
+  - `context_strategy.json` — the editorial strategy is already embedded in
+    the validated waves and their cluster
+  - `raw_launch_text` — the Brief Writer works from compacted data, never raw text
+  - `product_profile_raw.json` — the merged `product_profile.json` is the
+    authoritative version
+  - `wave_candidate_*.json` — only validated waves reach the Brief Writer
+  - `gaps[]` — orchestrator concern, not writing concern
+
+### Generate timestamp
+
+Before calling the agent, run this shell command to get the current time:
+```
+date +"%d-%m-%Y_%H-%M-%S"
+```
+Store the result as `timestamp`. Pass it to the agent so it uses the real
+time in the filename. Do not let the agent generate its own timestamp.
+
+### Delegate to sub-agent: `brief-writer`
+
+When calling the agent, state all values in plain language at the top of
+your message to the agent:
+
+"company_name is: [actual value]
+ company_mission is: [actual value]
+ company_industry is: [actual value]
+ spokesperson_name is: [actual value]
+ spokesperson_title is: [actual value]
+ spokesperson_speaking_style is: [actual value]
+ launched_product_name is: [actual value]
+ launched_product_one_liner is: [actual value]
+ launched_product_core_problem is: [actual value]
+ launched_product_target_audience is: [actual value]
+ anti_target_audience is: [actual value or null]
+ launched_product_value_proposition is: [actual value]
+ launched_product_differentiation_claim is: [actual value]
+ launched_product_functional_breakdown is: [actual value]
+ launched_product_offering_structure is: [actual value]
+ previous_product is: [actual value or null]
+ top_level_issue is: [actual value]
+
+ writing_guidance is: [full object]
+ validated_waves is: [full JSON content]
+ raw_gold_sentences is: [flat list of text values only]
+ user_stories is: [full stories array or null]
+ company_id is: [actual value]
+ product_id is: [actual value]
+ timestamp is: [output of date command]"
+
+Never pass variable placeholder names. Always pass the actual values.
+
+### Post-Brief Check
+
+After the Brief Writer returns, check:
+
+1. The output file was saved to:
+   `clients/{company_id}/launches/{product_id}/briefs/brief_final_{timestamp}.md`
+
+2. No `writing_guidance.global_forbidden_words` appear in the brief text
+
+3. The zeitgeist paragraph does not mention `launched_product_name` or
+   `company_name` — if it does, report this to the client as a thin-line
+   violation
+
+If all checks pass:
+  Tell the client: "Brief complete. Saved to:
+  `clients/{company_id}/launches/{product_id}/briefs/brief_final_{timestamp}.md`"
+
+If any forbidden word is found:
+  Tell the client which words were found and in which section.
+  Ask: "Remove these and regenerate, or keep as-is?"
+
+Pipeline complete.
 
 ---
 
@@ -660,11 +775,12 @@ Do not proceed beyond Step 7 until those steps are written here.
 - Never pass raw text to writing agents — compacted data + raw_gold only
 - Never skip Wave Validator — all research must pass through scoring
 - Always save every intermediate output before proceeding to the next step
-- raw_gold sentences are untouchable — Brief Writer uses them verbatim
+- raw_gold sentences may be rephrased for flow but their meaning and
+  specificity must be preserved — never dilute or generalize
 - writing_guidance is a hard constraint for the Brief Writer
 - If any agent fails: report the agent name and what input it received,
   then ask whether to retry or continue without that output
 - On re-runs: if product_profile.json exists → ask "re-extract or reuse?"
 - On re-runs: if validated_waves.json is under 60 days →
   ask "reuse, refresh stale only, or rebuild fully?"
-- All four input files are always re-read on every run
+- All input files are always re-read on every run (company_input.md for /new-client, four launch files for /new-launch)

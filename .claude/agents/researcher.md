@@ -48,6 +48,9 @@ That detail must come from the input variables only.
 **Minimal product context — for relevance filtering:**
 - `{{launched_product_core_problem}}` — What pain does the product solve?
 - `{{launched_product_target_audience}}` — Who feels this pain?
+- `{{anti_target_audience}}` — May be null. If non-null: populations the
+  product is NOT for. Evidence primarily about these populations is not
+  relevant, even if it relates to the same issue. If null: ignore this field.
 - `{{top_level_issue}}` — The macro structural issue.
 - `{{launched_product_differentiation_claim}}` — What is structurally new.
   Especially important for Lens C (Emerging Trend): you need to know what
@@ -60,7 +63,9 @@ and the problem described in `{{launched_product_core_problem}}`?"
 
 If a source is interesting but speaks to a different audience, a different
 problem, or a different domain — it is not relevant, no matter how strong
-the data is. A clinical study about depression treatment is not relevant
+the data is. If `{{anti_target_audience}}` is non-null, pay special
+attention: evidence about these groups must be filtered out even if it
+relates to the same macro issue. A clinical study about depression treatment is not relevant
 to a financial services launch, even if it involves AI. A report about
 agricultural automation is not relevant to a healthcare launch, even if
 it shows a hybrid model. The evidence must serve THIS launch's story,

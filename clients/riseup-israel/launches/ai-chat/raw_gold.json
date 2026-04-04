@@ -1,0 +1,40 @@
+{
+  "sentences_count": 5,
+  "sentences": [
+    {
+      "text": "רוב הישראלים לא סובלים מחוסר במידע פיננסי, אלא מ\"ערפל כלכלי\".",
+      "source": "Client Notes",
+      "type": "hook",
+      "strength": "high",
+      "usage_note": "Opening line for a brief or zeitgeist paragraph — reframes the problem away from data scarcity toward emotional fog."
+    },
+    {
+      "text": "זהו לא עוד בוט שירות לקוחות, אלא \"שותף פיננסי\" מבוסס בינה מלאכותית, שנועד להנגיש את המתודולוגיה המוכחת של רייזאפ לשיחה חופשית בגובה העיניים כדי להרגיש בטוב עם כסף.",
+      "source": "Client Notes",
+      "type": "claim",
+      "strength": "high",
+      "usage_note": "Core positioning sentence for the product description section — differentiates from generic chatbots and anchors the value proposition."
+    },
+    {
+      "text": "המטרה הייתה ללמד את ה-AI את הפילוסופיה שלנו: פשטות מנצחת אנליזה.",
+      "source": "Client Notes",
+      "type": "insight",
+      "strength": "high",
+      "usage_note": "Headline-ready manifesto line for the differentiation or methodology section of the brief."
+    },
+    {
+      "text": "הבעיה היא אף פעם לא חוסר בדאטה, אלא ה\"ערפל\" והחרדה שהוא מייצר.",
+      "source": "Client Notes",
+      "type": "insight",
+      "strength": "high",
+      "usage_note": "Reinforcement line for the problem statement — pairs with the opening hook to build the emotional case."
+    },
+    {
+      "text": "האם נוח לכם שההחזר יהפוך להוצאה קבועה, או שאתם מעדיפים לשמור על הגמישות החודשית שלכם?",
+      "source": "Client Notes",
+      "type": "quote",
+      "strength": "medium",
+      "usage_note": "Concrete product-voice example for the brief's product experience section — shows the AI speaking in human, non-technical language."
+    }
+  ]
+}

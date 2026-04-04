@@ -51,8 +51,6 @@
   },
   "top_level_issue": "יוקר המחיה",
   "top_level_issue_source": "client_defined",
-  "top_level_primary_subdomain": "שחיקת הכנסה פנויה",
-  "top_level_primary_subdomain_source": "client_defined",
   "gaps": [
     "launched_product_limitations",
     "launch_timing_signals"
