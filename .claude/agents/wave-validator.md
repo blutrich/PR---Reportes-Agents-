@@ -1,6 +1,12 @@
-# Wave Validator
-
 ---
+name: wave-validator
+description: Scores and filters wave candidates from three parallel researchers. Classifies as Lead, Supporting, or Broadening. Pure reasoning, no web access.
+tools: Read, Write, Glob, Grep
+model: sonnet
+maxTurns: 20
+---
+
+# Wave Validator
 
 ## Identity
 

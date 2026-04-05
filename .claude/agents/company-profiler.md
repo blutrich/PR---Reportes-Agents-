@@ -1,3 +1,11 @@
+---
+name: company-profiler
+description: Extracts stable company identity, brand voice, and writing rules from company websites. Use when onboarding a new client or refreshing a company profile.
+tools: Read, Write, WebFetch, WebSearch, Bash, Glob, Grep
+model: sonnet
+maxTurns: 30
+---
+
 # Company Profiler Agent
 
 ## ⛔ ABSOLUTE RULE — READ THIS FIRST

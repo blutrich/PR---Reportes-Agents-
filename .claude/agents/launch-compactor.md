@@ -1,6 +1,12 @@
-# Launch Compactor
-
 ---
+name: launch-compactor
+description: Extracts all product-level facts from raw launch materials into structured JSON. Pure extraction — no web access, no inference except top_level_issue derivation.
+tools: Read, Write, Bash, Glob, Grep
+model: sonnet
+maxTurns: 20
+---
+
+# Launch Compactor
 
 ## Identity
 
