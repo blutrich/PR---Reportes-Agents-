@@ -106,6 +106,14 @@ Use the Write tool to create all four template files inside the launch folder.
 # launched_product_target_audience: The precise population this is built for
 # launched_product_value_proposition: The concrete benefit the user receives
 # launched_product_differentiation_claim: What makes this structurally different
+#
+# --- Term Substitutions (launch-specific) ---
+# Override or add to company-level substitutions for this launch only.
+# Format: term_substitution: instead_of: X | say: Y
+# One substitution per line. Remove the # to activate.
+#
+# term_substitution: instead_of: consulting | say: advisory
+# term_substitution: instead_of: tool | say: service
 ```
 
 `clients/{company_id}/launches/{product_id}/editorial_notes.md`:
@@ -322,7 +330,12 @@ If it EXISTS:
   Read each line.
   Skip any line starting with `#` — these are comments.
   Skip empty lines.
-  For each remaining line, parse as `field_name: value`.
+  For each remaining line:
+    - If the line starts with `term_substitution:` — parse as
+      `term_substitution: instead_of: X | say: Y` and collect into
+      `launched_product_term_substitutions[]`. These are NOT field overrides —
+      they are collected separately for the merge step (Step 3).
+    - Otherwise, parse as `field_name: value`.
 
   For each field defined:
     - Overwrite the corresponding field in `product_profile_raw.json`
@@ -391,6 +404,36 @@ From `client_strategic_additions[]` read in Step 0B:
 - `framing_rules`: keep all, deduplicate identical entries
 - `must_include`: keep all, deduplicate identical entries
 - `global_tone_rules`: carry forward from Layer A as-is
+- `term_substitutions`: combine `global_term_substitutions` from company profile
+  with any `launched_product_term_substitutions[]` from `product_input.md`.
+  If a product-level entry has the same `instead_of` value as a company-level
+  entry, the product-level entry wins (overrides the `say` value).
+  Deduplicate by `instead_of` key.
+  If both sources are empty or null — write an empty array `[]`.
+
+  **Contradiction check — run after merging:**
+  After building the merged list, check for contradictions:
+  - **Circular chains:** A `say` value in one entry is the `instead_of` in
+    another entry (e.g., "instead_of: users, say: customers" + "instead_of:
+    customers, say: clients"). This creates an unresolvable loop.
+  - **Conflicting targets:** Two entries with the same `instead_of` but
+    different `say` values that were not resolved by the override rule
+    (this should not happen if dedup ran correctly, but verify).
+
+  If any contradiction is found:
+    Stop and report to the client: "Term substitution contradiction found:
+    [describe the conflict]. Please fix in company_input.md or product_input.md
+    and run again."
+    Do not proceed.
+
+- `identity_vocabulary`: combine `brand_identity_vocabulary` from company profile
+  with `launched_product_identity_vocabulary` from `product_profile_raw.json`.
+  **Product level extends, never removes:**
+  - New terms from the product level are added to the list.
+  - If the same `term` exists in both, **append** the product-level
+    `preferred_adjectives` and `forbidden_adjectives` to the company-level
+    lists. Deduplicate each list. Never remove a company-level adjective.
+  - If both sources are empty or null — write an empty array `[]`.
 
 Produce the complete `product_profile.json` — which is
 `product_profile_raw.json` with the unified `writing_guidance` block injected.
@@ -441,7 +484,7 @@ Read the following fields and assemble them as the agent's input:
   - `writing_guidance`, `forbidden_words`, `tone_rules`
   - `functional_breakdown`
   - `spokesperson`, `speaking_style`
-  - `stories_for_conversion`, `product_preferred_terms`
+  - `stories_for_conversion`, `brand_identity_vocabulary`
   - `gaps[]`, `limitations[]`
   - `launched_product_name`, `launched_product_one_liner`
 
@@ -668,7 +711,7 @@ yourself — do not pass full files. Pass the specific fields listed below.
   - `top_level_issue`
 
   - `writing_guidance` (full: forbidden_words, global_tone_rules, framing_rules,
-    must_include, to_emphasize)
+    must_include, to_emphasize, term_substitutions, identity_vocabulary)
 
 **From `company_profile.json`:**
   - `company_name`

@@ -47,6 +47,15 @@ Create the template file:
 # If none designated — we will default to the CEO.
 # Example: Jane Doe, CEO
 
+## Term Substitutions
+# Words or phrases you want replaced in all briefs.
+# Format: instead_of: X | say: Y
+# One substitution per line. Remove the # to activate.
+#
+# instead_of: users | say: customers
+# instead_of: artificial intelligence | say: AI
+# instead_of: cheap | say: affordable
+
 ## Company URLs
 # All URLs that carry relevant brand information.
 # One URL per line.
@@ -83,6 +92,7 @@ Parse each section. For each section:
 **## Target Audience** → `company_target_audience` (full text)
 **## Anti Target Audience** → `company_anti_target_audience` (full text, may be empty)
 **## Spokesperson** → parse as `spokesperson_name, spokesperson_title`
+**## Term Substitutions** → `global_term_substitutions[]` (parsed as `{ "instead_of": X, "say": Y }` per line; empty array if section is empty or all commented)
 **## Company URLs** → `company_urls[]` (one URL per line)
 
 Validation:
@@ -100,6 +110,7 @@ If all required fields are present:
   - `company_anti_target_audience` (may be null if section was empty)
   - `spokesperson_name`
   - `spokesperson_title`
+  - `global_term_substitutions[]` (may be empty array if section was empty or all commented)
   - `company_urls[]`
 
   Wait for output.

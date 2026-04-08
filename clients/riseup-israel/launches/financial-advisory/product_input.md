@@ -21,3 +21,11 @@ launched_product_functional_breakdown.user_benefit: ליווי צמוד וממש
 
 top_level_issue: יוקר המחיה
 
+# --- Term Substitutions (launch-specific) ---
+# Override or add to company-level substitutions for this launch only.
+# Format: term_substitution: instead_of: X | say: Y
+# One substitution per line. Remove the # to activate.
+#
+# term_substitution: instead_of: consulting | say: advisory
+# term_substitution: instead_of: tool | say: service
+

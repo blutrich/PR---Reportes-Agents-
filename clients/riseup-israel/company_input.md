@@ -12,6 +12,18 @@ Hebrew
 ## Spokesperson
 יובל סמט, מנכ״ל
 
+## Term Substitutions
+# Words or phrases you want replaced in all briefs.
+# Format: instead_of: X | say: Y
+# One substitution per line. Remove the # to activate.
+#
+# instead_of: users | say: customers
+# instead_of: artificial intelligence | say: AI
+# instead_of: cheap | say: affordable
+
+instead_of: משתמשים | say: לקוחות
+instead_of: שליטה כלכלית | say: מסוגלות עצמית כלכלית
+
 ## Company URLs
 https://www.riseup.co.il/
 https://www.riseup.co.il/aboutus/

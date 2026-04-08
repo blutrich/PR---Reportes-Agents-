@@ -65,6 +65,10 @@
       "ויתור",
       "הגבלות"
     ],
+    "term_substitutions": [
+      { "instead_of": "משתמשים", "say": "לקוחות" },
+      { "instead_of": "שליטה כלכלית", "say": "מסוגלות עצמית כלכלית" }
+    ],
     "global_tone_rules": [
       "DO דבר על שליטה והעצמה כלכלית; DON'T דבר על הגבלה, ריסון או ויתור — האתר ממסגר את הניהול הכלכלי כצמיחה ולא כצמצום",
       "DO השתמש בשפה אישית, חמה ונגישה (׳להיות בטוב עם הכסף שלך׳); DON'T השתמש בשפה טכנית-בנקאית קרה או ז׳רגון פיננסי מנוכר",
@@ -82,8 +86,26 @@
       "שיחת היכרות חינמית כנקודת כניסה",
       "שילוב AI ויועץ אנושי כמנגנון הליווי"
     ],
+    "identity_vocabulary": [
+      { "term": "תזרים מזומנים", "preferred_adjectives": ["אישי", "חיובי", "חודשי"], "forbidden_adjectives": ["שלילי", "בעייתי"] },
+      { "term": "תזרים אישי", "preferred_adjectives": ["אוטומטי", "מותאם"], "forbidden_adjectives": [] },
+      { "term": "מספר יעד שבועי", "preferred_adjectives": [], "forbidden_adjectives": [] },
+      { "term": "חיסכון דינמי", "preferred_adjectives": ["מותאם אישית"], "forbidden_adjectives": ["כפוי", "מאולץ"] },
+      { "term": "מומחי תזרים", "preferred_adjectives": ["אנושיים"], "forbidden_adjectives": [] },
+      { "term": "בנקאות פתוחה", "preferred_adjectives": ["מאובטחת"], "forbidden_adjectives": [] },
+      { "term": "כסף נזיל", "preferred_adjectives": [], "forbidden_adjectives": [] },
+      { "term": "להיות בטוב עם הכסף", "preferred_adjectives": [], "forbidden_adjectives": [] },
+      { "term": "לנהל את הכסף", "preferred_adjectives": [], "forbidden_adjectives": [] },
+      { "term": "שינוי כלכלי", "preferred_adjectives": ["אמיתי", "מוחשי"], "forbidden_adjectives": ["קטן", "זניח"] },
+      { "term": "שינוי חברתי", "preferred_adjectives": ["אמיתי", "רחב"], "forbidden_adjectives": [] },
+      { "term": "מסוגלות עצמית", "preferred_adjectives": ["כלכלית"], "forbidden_adjectives": ["מוגבלת", "חלקית"] },
+      { "term": "ליווי", "preferred_adjectives": ["צמוד", "אישי", "רציף", "מקצועי"], "forbidden_adjectives": ["חלקי", "אוטומטי"] },
+      { "term": "יועץ", "preferred_adjectives": ["אנושי", "פיננסי", "אישי"], "forbidden_adjectives": [] },
+      { "term": "תוכנית עבודה", "preferred_adjectives": ["ישימה", "מותאמת אישית"], "forbidden_adjectives": ["גנרית", "כללית"] }
+    ],
     "to_emphasize": [
-      "The compass. The main and most important concept to emphazie:  שיתוף הפעולה ההדוק בין AI  לבין יועץ פיננסי אנושי, כדי ליצר ללקוח תזרים חיובי וכסף נזיל",
+      "The compass. The main and most important concept to emphazie:  .שיתוף הפעולה ההדוק בין אינטיליגנציה מלאכותית  לבין יועץ פיננסי אנושי, כדי ליצר ללקוח תזרים חיובי וכסף נזיל. חשוב מאוד !!! להדגיש את החלק האנושי !!! משום שעד עכשיו המוצר הסתמך רק על טכנולוגיה",
+      "Emphasize about the purpose of the product: הכל מכוון ליצירת כסף נזיל",
       "To emphasize about the service: הכל נעשה בשיתוף הדוק עם הלקוח. ליווי רציף מקצה לקצה של הלקוח בתהליך קבלת החלטות בתוך מציאות מורכבת ולעיתים מלחיצה. תרגום הנתונים הפיננסיים לתוכנית עבודה ישימה ומותאמת אישית. תרגום הנתונים הפיננסיים. לתוכנית עבודה ישימה ומותאמת אישית לפי מטרותיו של הלקוח"
     ]
   }

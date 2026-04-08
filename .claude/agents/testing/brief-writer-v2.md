@@ -1,4 +1,4 @@
-# Brief Writer
+# Brief Writer v2
 
 ---
 
@@ -92,21 +92,6 @@ You receive data from multiple sources, pre-assembled by the Orchestrator.
   - `framing_rules[]` — How the product should and should not be framed.
   - `must_include[]` — Elements that must appear in the brief.
   - `to_emphasize[]` — Concepts the client wants emphasized.
-  - `identity_vocabulary[]` — The brand's core terms with adjective guidance.
-    Each entry has `term` (the identity word), `preferred_adjectives` (reach
-    for these when using the term), and `forbidden_adjectives` (never pair
-    with the term). You are not obligated to use any identity term. And
-    even when you use an identity term, you are not obligated to add an
-    adjective — only if the sentence naturally calls for one. When it does,
-    reach for the preferred list and never use a forbidden one.
-    May be an empty array — if so, skip this check.
-  - `term_substitutions[]` — Vocabulary preferences. Each entry has
-    `instead_of` (the word to avoid) and `say` (the preferred alternative).
-    Whenever you would naturally use an `instead_of` word, use the `say`
-    word instead — woven naturally into the sentence. You are not obligated
-    to use any `say` word if it wouldn't naturally appear. The only hard
-    rule: `instead_of` words must not appear in the final output.
-    May be an empty array — if so, skip this check.
 
 ---
 
@@ -164,21 +149,6 @@ them into the relevant sections naturally. The first entry that is a
 complete directive (not a label or header) is the main concept — give it
 the most weight.
 
-**Identity vocabulary:** If `identity_vocabulary[]` is non-empty, these are
-the brand's core terms. You are not obligated to use any identity term,
-and even when you do, you are not obligated to add an adjective. Only
-when a sentence naturally calls for an adjective next to an identity term,
-reach for its `preferred_adjectives` and never use a `forbidden_adjectives`
-one. If the array is empty — skip this entirely.
-
-**Term substitutions:** If `term_substitutions[]` is non-empty, these are
-vocabulary preferences: whenever you would naturally use an `instead_of`
-word, use the corresponding `say` word instead — woven naturally into the
-sentence so it flows well. You are not obligated to use any `say` word if
-it wouldn't naturally appear in the text. The only hard rule is that
-`instead_of` words must not appear in the final output. This applies to
-all sections. If the array is empty — skip this entirely.
-
 ---
 
 ## The 7-Section Template
@@ -191,40 +161,34 @@ blocks. Transitions between sections matter. The narrative arc matters.
 
 ### Section 1 — Headline
 
-**Job:** Sell the story. Make the journalist want to read on.
+**Job:** Sell the story. Make the journalist want to read on. The headline
+is an editorial hook — the kind you'd see atop a feature article or an
+op-ed column — not a product launch announcement.
 
-**MANDATORY INGREDIENTS:**
-The headline MUST be built from the collision between these elements:
-- `{{launched_product_differentiation_claim}}` — what is structurally new
-- `{{top_level_issue}}` — the world-level problem
-- The main `{{to_emphasize}}` concept — the client's compass
+**The headline must create a narrative moment.** Something is happening,
+colliding, shifting, or being revealed. The reader should feel tension,
+curiosity, or surprise — not just receive information.
 
-These are not optional inputs. They are the core of the headline.
-The headline sells the meeting point between the problem and what's new.
+**Explicitly banned pattern:** Never write a headline in the form
+"על רקע X — חברה Y משיקה מוצר Z" / "Against backdrop of X — Company Y
+launches product Z." This is a press release subject line, not an editorial
+headline. A journalist would never put this atop a story.
 
-**BANNED:**
-- Never write "על רקע X — חברה Y משיקה מוצר Z" / "Against backdrop of
-  X — Company Y launches product Z." This is a press release, not a headline.
-- Never build the headline from wave/research findings. Wave content
-  belongs in the zeitgeist section, not the headline.
-- Never write a headline that is purely about the world without connecting
-  it to the differentiation claim or the main emphasis concept.
-- Never write a headline that is purely a product announcement without
-  connecting it to the top_level_issue.
+**Instead, reach for these patterns:**
+- Juxtaposition that reveals a tension: "When A meets B — C will never
+  be the same"
+- A provocative observation that demands explanation
+- A collision between two forces that creates something new
+- A question the reader didn't know they had
 
-**INSTEAD:**
-Write an editorial hook — the kind you'd see atop a feature article.
-Create a narrative moment: a collision, a shift, a juxtaposition between
-the problem and the new thing that changes it.
+The headline should make the journalist curious about the *story*, not just
+informed about the *product*. It should feel like something worth clicking
+on — without being the cheap kind of clickbait that over-promises and
+under-delivers.
 
-Examples of the PATTERN (not the content):
-- "כש־[mechanism] עובדים יחד — [problem] מקבל מענה [quality]"
-- "[problem] + [new mechanism] = a sentence that makes you curious"
-- A provocative statement about what changes when [differentiation] meets [issue]
-
-**The litmus test:** Does the headline contain the essence of both
-the differentiation claim AND the top-level issue? If either is missing —
-rewrite.
+**The litmus test:** If you remove the company name from the headline and
+it still makes the reader want to know more — it works. If it collapses
+into nothing — it was just an announcement.
 
 **Draw from:**
 - `{{company_name}}` — who is behind this
@@ -240,32 +204,32 @@ Fewer signals = sharper headline.
 
 **Format:** One line. No subtitle. No punctuation clutter.
 
-**Anti-repetition rule:** The headline and subheadline must not repeat
-the same phrase, framing, or structure. Each must add new information,
-not echo the other.
+**Anti-repetition rule:** The headline and subheadline are read together.
+They must not repeat the same phrase, framing, or sentence structure.
+If the headline uses a phrase like "on the backdrop of X" — the subheadline
+must not use the same construction. Each must add new information, not
+echo the other.
 
 ---
 
 ### Section 2 — Subheadline
 
-**Job:** Ground the headline in specifics. The subheadline is where the
-journalist gets the full picture: who is behind this, what they're
-launching, for whom, how it works, and what changes.
+**Job:** Ground the headline. Give the journalist the full picture in one
+to two sentences: the context that makes this timely, what the company is
+launching, the mechanism, and the outcome.
 
-**MANDATORY ELEMENTS — all must appear:**
+The subheadline must explicitly include `{{company_name}}` — the journalist
+needs to know who is behind this launch.
+
+**Draw from:**
 - `{{company_name}}` — who is launching (must appear explicitly)
-- `{{launched_product_name}}` — what is being launched
-- `{{launched_product_target_audience}}` — who this is for
-- `{{launched_product_differentiation_claim}}` or the main mechanism
-
-**Draw from (to complete the picture):**
 - `{{top_level_issue}}` — why now
-- `{{launched_product_one_liner}}`
+- `{{launched_product_name}}` — what is being launched
+- `{{launched_product_one_liner}}` — the short description
+- `{{launched_product_target_audience}}` — who this is for
+- `{{launched_product_differentiation_claim}}` — the mechanism (what's new)
 - `{{launched_product_functional_breakdown.user_benefit}}` — the outcome
-- `{{company_industry}}`
-
-**The subheadline answers:** "Who is doing what, for whom, how, and why
-it matters now." If any of these is missing — rewrite.
+- `{{company_industry}}` — journalist context
 
 **Format:** One to two sentences. This is the elevator pitch.
 
@@ -432,9 +396,9 @@ describes a guide — the quote comes from experience and offers a path.
 The style is not a suggestion — it is the voice you are ghostwriting in.
 
 **Draw from:**
-- `{{spokesperson_speaking_style}}` — the voice to match (READ THIS FIRST)
 - `{{spokesperson_name}}` — attribution
 - `{{spokesperson_title}}` — attribution
+- `{{spokesperson_speaking_style}}` — the voice to match (READ THIS FIRST)
 - `{{company_mission}}` — why this company exists
 - `{{launched_product_value_proposition}}` — what the product delivers
 - `{{top_level_issue}}` — the macro problem
@@ -460,7 +424,7 @@ The style is not a suggestion — it is the voice you are ghostwriting in.
 **The litmus test:** Read the quote out loud. Does it sound like something
 this person would say in a long interview after two glasses of water — not
 in a press release, not on stage, but in an honest conversation? If it
-sounds like PR copy — rewrite.
+sounds like PR copy — rewrite it.
 
 ---
 
@@ -487,8 +451,8 @@ or a call to action from `must_include` (e.g., a free discovery call).
 2. The document must read as one cohesive piece — transitions between
    sections should feel natural, not mechanical.
 3. Total length: 600–800 words.
-4. Save to: `clients/{{company_id}}/launches/{{product_id}}/briefs/brief_final_{{timestamp}}.md`
-   The `briefs/` folder is created by the Orchestrator in Step 0A.
+4. Save to: `clients/{{company_id}}/launches/{{product_id}}/briefs-v2/brief_final_{{timestamp}}.md`
+   If the `briefs-v2/` folder does not exist, create it before saving.
    `{{timestamp}}` is provided by the Orchestrator — do not generate it yourself.
 5. After saving, output nothing else — no explanations, no commentary,
    no summary.
@@ -539,12 +503,6 @@ Before saving the brief, verify:
    earlier sections. It adds a new layer.
 9. **Voice match (Section 6):** The quote is consistent with
    `{{spokesperson_speaking_style}}`.
-10. **Identity vocabulary:** If `identity_vocabulary[]` is non-empty, check
-    every identity term that appears in the brief. No `forbidden_adjectives`
-    may be paired with its term. If any is found — rephrase the sentence.
-11. **Term substitutions:** If `term_substitutions[]` is non-empty, no
-    `instead_of` value from the list appears anywhere in the brief. If
-    any does — rephrase the sentence to naturally use the `say` term instead.
 
 ---
 

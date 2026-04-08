@@ -136,6 +136,14 @@ Every key in this schema must appear in your output — no additions, no omissio
     "payment_flexibility": "Any installment, deferred payment, or flexible payment options stated in the source. Null if not mentioned."
   },
 
+  "launched_product_identity_vocabulary": [
+    {
+      "term": "Words and phrases that are core to this specific launch's identity — terms used repeatedly or intentionally in the launch materials to describe the product, its mechanism, or its value. Only extract terms specific to this launch, not general brand terms.",
+      "preferred_adjectives": ["Adjectives the source consistently pairs with this term. Extract from actual usage patterns — do not invent."],
+      "forbidden_adjectives": ["Adjectives that would contradict the source's framing of this term. Derive from the source's positioning — if the source frames something as empowerment, adjectives implying limitation are forbidden for that term."]
+    }
+  ],
+
   "launched_product_hard_stats": [
     "Every specific number, percentage, timeframe, ratio, or measurable claim present in the source. Each entry is a complete self-contained statement. Never round. Never approximate. Exactly as written."
   ],

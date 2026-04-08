@@ -91,12 +91,27 @@ company_one_liner_mission
 spokesperson.name
 spokesperson.speaking_style
 stories_for_conversion
-product_preferred_terms
+brand_identity_vocabulary[]
+  ← Words and phrases that are core to the brand's identity.
+  ← Each entry: { "term": "...", "preferred_adjectives": [...], "forbidden_adjectives": [...] }
+  ← AI-derived by the Company Profiler from scraped content.
+  ← The client can override or extend via company_input.md (future) or
+    product_input.md (per-launch).
+  ← A launch may add new terms or append adjectives to existing terms
+    via launched_product_identity_vocabulary, but may never remove
+    company-level adjectives.
 search_config.geo_focus
 search_config.language_bias
 search_config.primary_geo
 writing_guidance.global_forbidden_words
 writing_guidance.global_tone_rules
+writing_guidance.global_term_substitutions[]
+  ← Word/phrase replacements that apply to all briefs.
+  ← Each entry: { "instead_of": "...", "say": "..." }
+  ← Client-defined only — the Company Profiler passes them through as-is.
+  ← Never extracted or inferred from scraped content.
+  ← Empty array if the client did not define any.
+  ← A launch may override or extend these via product_input.md.
 ```
 
 ### Layer B — Product Launch Profile (per-launch, built fresh each time)
@@ -198,6 +213,29 @@ writing_guidance
   writing_guidance.must_include[]
   writing_guidance.to_emphasize[]
     ← Primary destination for editorial_notes.md content
+  writing_guidance.term_substitutions[]
+    ← Merged from company-level global_term_substitutions and
+      launched_product_term_substitutions from product_input.md.
+    ← Each entry: { "instead_of": "...", "say": "..." }
+    ← Product-level entries override company-level for the same instead_of key.
+    ← After merging, the orchestrator checks for contradictions (circular
+      chains where a say value is another entry's instead_of). If found,
+      stops and reports to the client.
+    ← Empty array if neither source defines any.
+    ← Enforced by the Brief Writer as vocabulary preferences: whenever the
+      writer would naturally use an instead_of word, it uses the say word
+      instead, woven naturally into the sentence. The writer is not obligated
+      to use any say word — only to avoid instead_of words in the output.
+  writing_guidance.identity_vocabulary[]
+    ← Merged from company-level brand_identity_vocabulary and
+      launched_product_identity_vocabulary from the Launch Compactor.
+    ← Each entry: { "term": "...", "preferred_adjectives": [...], "forbidden_adjectives": [...] }
+    ← Product-level entries can add new terms or append adjectives to
+      existing company-level terms. Product level may never remove
+      company-level adjectives.
+    ← The Brief Writer uses preferred_adjectives when it naturally uses
+      an identity term — not obligated to use them otherwise. Forbidden
+      adjectives must never be paired with the term.
 ```
 
 ### Layer C — Research Output (built per-launch by research agents)
@@ -267,6 +305,10 @@ Populations the company does NOT serve (optional)
 ## Spokesperson
 Jane Doe, CEO
 
+## Term Substitutions
+instead_of: users | say: customers
+instead_of: artificial intelligence | say: AI
+
 ## Company URLs
 https://example.com
 https://example.com/about
@@ -278,6 +320,7 @@ Sections:
 - **Target Audience** — detailed description of who the company serves (required)
 - **Anti Target Audience** — populations to exclude from targeting (optional)
 - **Spokesperson** — full name and title, comma-separated (required)
+- **Term Substitutions** — word/phrase replacements for all briefs (optional). Format: `instead_of: X | say: Y`, one per line. Empty array if not defined.
 - **Company URLs** — one URL per line, all pages to scrape (at least one required)
 
 Rules:
@@ -338,6 +381,8 @@ These are authoritative — not suggestions.
 launched_product_name: Maple
 launched_product_differentiation_claim: The only tool that does X without requiring Y
 launched_product_value_proposition: ...
+term_substitution: instead_of: consulting | say: advisory
+term_substitution: instead_of: tool | say: service
 ```
 
 Override rules:
@@ -347,6 +392,10 @@ Override rules:
 4. Every field NOT defined here is left exactly as extracted — never touched by absence
 5. Lines starting with `#` are comments and are ignored
 6. Client-defined values are authoritative and are never questioned downstream
+7. `term_substitution` lines are not field overrides — they are collected separately
+   and merged with company-level `global_term_substitutions` in Step 3.
+   Product-level entries override company-level for the same `instead_of` key.
+   If no `term_substitution` lines exist — no `launched_product_term_substitutions` are added.
 
 ---
 
@@ -660,7 +709,7 @@ in the input was chosen because it helps the agent answer one question:
 - `functional_breakdown` → how the product works step by step. The strategist
   needs to know *what problem it solves*, not *how it works*.
 - `spokesperson`, `speaking_style` → relevant to the brief, not to the world.
-- `stories_for_conversion`, `product_preferred_terms` → marketing assets
+- `stories_for_conversion`, `brand_identity_vocabulary` → marketing assets
   for downstream agents.
 - `gaps[]`, `limitations[]` → orchestrator and brief-writer concerns.
 - `launched_product_name`, `launched_product_one_liner` → the agent should
@@ -1161,7 +1210,16 @@ document.
 
 **Global constraints (apply to every section):**
 - `{{writing_guidance}}` is a hard constraint on every sentence — forbidden
-  words must never appear, tone rules must be followed, framing rules apply
+  words must never appear, tone rules must be followed, framing rules apply,
+  and term substitutions must be respected (whenever the writer would naturally
+  use an `instead_of` word, it uses the `say` word instead, woven naturally
+  into the text — but using `say` words is not obligatory, only avoiding
+  `instead_of` words is)
+- `{{writing_guidance.identity_vocabulary}}` defines the brand's core terms
+  with their preferred and forbidden adjectives. When the writer naturally
+  uses an identity term, it should reach for the preferred adjectives and
+  never pair it with a forbidden adjective. The writer is not obligated to
+  use any identity term — only to respect the adjective rules when it does.
 - `{{company_industry}}` is provided so the agent knows what type of
   journalist it is writing for
 - All output must be in the same language as the source material
