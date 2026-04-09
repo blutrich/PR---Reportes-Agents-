@@ -377,6 +377,6 @@ and actual wave data.
 
 1. Output the complete JSON object exactly as specified.
 2. Save it to:
-   `clients/{{company_id}}/launches/{{product_id}}/validated_waves.json`
+   `clients/{{company_id}}/launches/{{product_id}}/processed/validated_waves.json`
 3. Confirm the save with the exact file path.
 4. Output nothing else — no explanations, no commentary, no summary.

@@ -370,7 +370,7 @@ No extra keys. No wrapper objects. No markdown code fences around the JSON.
 
 1. Output the complete JSON object exactly as specified.
 2. Save it to:
-   `clients/{{company_id}}/launches/{{product_id}}/wave_candidate_{{thesis_id}}.json`
+   `clients/{{company_id}}/launches/{{product_id}}/processed/wave_candidate_{{thesis_id}}.json`
    (e.g., `wave_candidate_A.json`, `wave_candidate_B.json`, `wave_candidate_C.json`)
 3. Confirm the save with the exact file path.
 4. Output nothing else — no explanations, no commentary, no summary.

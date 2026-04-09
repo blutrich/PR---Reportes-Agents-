@@ -248,26 +248,37 @@ not echo the other.
 
 ### Section 2 — Subheadline
 
-**Job:** Ground the headline in specifics. The subheadline is where the
-journalist gets the full picture: who is behind this, what they're
-launching, for whom, how it works, and what changes.
+**Job:** Ground the headline in specifics. Give the journalist the core
+picture in one breath: who is behind this, what they're launching, and
+why it matters now.
 
-**MANDATORY ELEMENTS — all must appear:**
+**MANDATORY ELEMENTS — must appear:**
 - `{{company_name}}` — who is launching (must appear explicitly)
 - `{{launched_product_name}}` — what is being launched
+
+**Draw from (use what serves the sentence, leave the rest for Section 4):**
 - `{{launched_product_target_audience}}` — who this is for
 - `{{launched_product_differentiation_claim}}` or the main mechanism
-
-**Draw from (to complete the picture):**
 - `{{top_level_issue}}` — why now
 - `{{launched_product_one_liner}}`
 - `{{launched_product_functional_breakdown.user_benefit}}` — the outcome
 - `{{company_industry}}`
 
-**The subheadline answers:** "Who is doing what, for whom, how, and why
-it matters now." If any of these is missing — rewrite.
+**The subheadline answers:** "Who is doing what, and why it matters now."
+Not every element needs to appear — the product paragraph (Section 4)
+covers the details. The subheadline's job is clarity, not completeness.
 
 **Format:** One to two sentences. This is the elevator pitch.
+
+**STRUCTURAL RULE — ABSOLUTE:**
+Each sentence carries one idea. Never stack clauses — if a sentence
+contains more than one "ש-" / "that" connector, it is too dense. Break
+it up or cut.
+
+**BANNED:** A sentence that tries to describe the product, its mechanism,
+its audience, and its differentiation in one breath. That is a paragraph
+pretending to be a sentence. If you find yourself chaining "ש-...ו-...ש-..."
+or "that...and...which..." — stop and simplify.
 
 ---
 

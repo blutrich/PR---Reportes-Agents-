@@ -267,6 +267,6 @@ by the Orchestrator before the pipeline continues:**
 
 1. Output the complete JSON object exactly as specified.
 2. Save it to:
-   `clients/{{company_id}}/launches/{{product_id}}/product_profile_raw.json`
+   `clients/{{company_id}}/launches/{{product_id}}/processed/product_profile_raw.json`
 3. Confirm the save with the exact file path.
 4. Output nothing else — no explanations, no commentary, no summary.

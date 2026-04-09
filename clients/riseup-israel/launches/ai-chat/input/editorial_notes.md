@@ -15,3 +15,7 @@
 # Example: To emphasize about the service:
 # Example: Framing notes:
 # Example: Things to avoid —
+
+To emphasize: הלקוח לא עני ולא בור — הוא מרוויח טוב ועדיין לא מרגיש שליטה. זה הפרדוקס שצריך לפתוח איתו.
+To emphasize: המוצר לא משפר את הדשבורד — הוא מחליף דאטה בתשובה. להדגיש את ההבדל הזה בכל זווית.
+To emphasize: הסיפור האמיתי הוא שינוי התנהגות — לא פיצ'ר. "הפסקנו להתווכח על כסף" זה השורה התחתונה.

@@ -1,0 +1,74 @@
+{
+  "raw_gold": [
+    {
+      "text": "ליווי הלקוח מבוסס על עבודה משותפת של AI ויועץ אנושי, כתף אל כתף: ה-AI מנתח את נתוני הבנק והאשראי, מפיק התראות שוטפות ומבצע חיזוי של התזרים העתידי, והיועץ משתמש בתובנות כדי לבנות עם הלקוח תוכנית פעולה ולהטמיע הרגלים פיננסיים ברי-קיימא.",
+      "source": "Client Notes",
+      "type": "insight",
+      "strength": 5,
+      "usage_note": "The most complete articulation of the hybrid AI+human model in the entire source material. Defines the structural differentiation — AI does not replace the advisor but powers them. Contains the full mechanism chain: data analysis, alerts, forecasting, then human-led action plan and habit building. Essential for any paragraph explaining how the service works and why it is different from pure-tech or pure-human alternatives."
+    },
+    {
+      "text": "יד ביד, כל הדרך לתזרימים חיוביים",
+      "source": "https://www.riseup.co.il/advisory/",
+      "type": "hook",
+      "strength": 5,
+      "usage_note": "Primary headline from the product page. Compresses the entire promise into one phrase — partnership method ('hand in hand') plus measurable destination ('positive cash flow'). Usable as headline anchor, pull quote, or brief opening line."
+    },
+    {
+      "text": "בונים תוכנית פעולה מדויקת על בסיס \"המציאות הכלכלית שלך בזמן אמת\" ללא ניחושים.",
+      "source": "https://www.riseup.co.il/advisory/",
+      "type": "claim",
+      "strength": 5,
+      "usage_note": "Positions the service against guesswork-based financial planning. The phrase 'your real-time economic reality' is the key differentiator — the plan is built on live bank and credit data, not self-reported estimates or annual snapshots. Strong for differentiation paragraphs."
+    },
+    {
+      "text": "המערכת מייצרת שקיפות שמאפשרת בחירות נבונות לאורך זמן.",
+      "source": "Client Notes",
+      "type": "insight",
+      "strength": 4,
+      "usage_note": "Frames the ultimate outcome as sustained wise decision-making enabled by transparency — not a one-time fix but a long-term behavioral shift. Strong closing line for a press release or spokesperson quote."
+    },
+    {
+      "text": "הליווי נשען על המנגנון המרכזי של רייזאפ — תזרים חודשי אוטומטי בהתאמה אישית, הנתמך באינטגרציה מלאה לחשבונות הבנק וכרטיסי האשראי, ובקהילה תומכת.",
+      "source": "Client Notes",
+      "type": "claim",
+      "strength": 4,
+      "usage_note": "Shows the advisory service is not standalone — it sits on top of an existing automated infrastructure (personalized monthly cash flow engine, full bank and credit card integration, supportive community). Explains why this advisory offering is structurally different from generic financial coaching."
+    },
+    {
+      "text": "ליווי אישי לשקט כלכלי: בונים יחד את הדרך שלך לצמיחה",
+      "source": "https://www.riseup.co.il/advisory/",
+      "type": "hook",
+      "strength": 4,
+      "usage_note": "Pairs the emotional outcome (financial peace of mind) with the collaborative method (building together) and the aspirational direction (growth). Signals this service is aspirational, not remedial."
+    },
+    {
+      "text": "השירות האיכותי ביותר במחיר הטוב ביותר",
+      "source": "https://www.riseup.co.il/advisory/",
+      "type": "claim",
+      "strength": 4,
+      "usage_note": "Direct value-for-money positioning claim from the product page. Bold framing that sets expectation of premium quality at accessible pricing. Useful in differentiation or pricing narrative paragraphs."
+    },
+    {
+      "text": "להטמיע הרגלים פיננסיים ברי-קיימא",
+      "source": "Client Notes",
+      "type": "insight",
+      "strength": 4,
+      "usage_note": "Frames the service outcome as sustainable behavioral change rather than one-time advice. The word 'sustainable' (בר-קיימא) elevates the promise from transactional to transformational. Strong for impact-oriented narratives."
+    },
+    {
+      "text": "מגוון מסלולים מפגישה אחת ועד ליווי שנתי מלא, עם אפשרות פריסה של עד 12 תשלומים.",
+      "source": "https://www.riseup.co.il/advisory/",
+      "type": "claim",
+      "strength": 3,
+      "usage_note": "Demonstrates accessibility and flexibility — the service meets people at their commitment level and financial capacity. The 12-installment option removes the irony of needing to pay upfront for financial help."
+    },
+    {
+      "text": "פגישה חד-פעמית לבניית תוכנית תזרימית מותאמת אישית, נבין לעומק את התזרים, איפה אתם עומדים ואיזה החלטות אפשר לקבל קדימה",
+      "source": "Client Notes",
+      "type": "insight",
+      "strength": 3,
+      "usage_note": "Describes the entry-level offering in concrete terms — not a vague consultation but a specific deliverable (personalized cash flow plan) with forward-looking decision mapping. Shows even a single session has tangible output."
+    }
+  ]
+}

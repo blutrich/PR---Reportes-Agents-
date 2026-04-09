@@ -333,18 +333,18 @@ Rules:
 ### Launch Input Files
 
 The client prepares up to four files before running `/new-launch`.
-All four are created automatically as commented templates in the launch folder
+All four are created automatically as commented templates in the `input/` subfolder
 on the first run if they don't exist. The client fills them in and runs again.
 
-All four files are created directly in the launch folder:
-`clients/{company_id}/launches/{product_id}/`
+All four files are created directly in the `input/` subfolder:
+`clients/{company_id}/launches/{product_id}/input/`
 There is no client-level staging and no file moving.
 
 ---
 
 ### launch_input.md — Sources
 
-**Location:** `clients/{company_id}/launches/{product_id}/launch_input.md`
+**Location:** `clients/{company_id}/launches/{product_id}/input/launch_input.md`
 **Purpose:** Tells the Orchestrator where to find the launch materials.
 `product_id` is passed as a command argument — it does not appear in this file.
 
@@ -373,7 +373,7 @@ Rules:
 
 ### product_input.md — Authoritative field overrides
 
-**Location:** `clients/{company_id}/launches/{product_id}/product_input.md`
+**Location:** `clients/{company_id}/launches/{product_id}/input/product_input.md`
 **Purpose:** Client-defined values that overwrite extracted values.
 These are authoritative — not suggestions.
 
@@ -401,7 +401,7 @@ Override rules:
 
 ### editorial_notes.md — Emphasis directives
 
-**Location:** `clients/{company_id}/launches/{product_id}/editorial_notes.md`
+**Location:** `clients/{company_id}/launches/{product_id}/input/editorial_notes.md`
 **Purpose:** Concepts and angles the client wants emphasized in the brief
 that aren't explicitly stated in the launch materials.
 Every active line must be a complete, standalone directive.
@@ -422,7 +422,7 @@ Rules:
 
 ### user_stories_input.md — Customer testimonials, raw (optional)
 
-**Location:** `clients/{company_id}/launches/{product_id}/user_stories_input.md`
+**Location:** `clients/{company_id}/launches/{product_id}/input/user_stories_input.md`
 **Purpose:** Raw, unstructured customer testimonials in any format — WhatsApp
 messages, emails, survey responses, copied notes. The client pastes everything
 here without worrying about formatting.
@@ -467,7 +467,7 @@ a commented template. Client fills it in and runs again. Second run builds
 the company profile.
 
 **`/new-launch {company_id} {product_id}`** — first run creates four template
-files in the launch folder (`launch_input.md`, `product_input.md`,
+files in the `input/` folder (`launch_input.md`, `product_input.md`,
 `editorial_notes.md`, `user_stories_input.md`). Client fills them in and
 runs again. Second run executes the full pipeline.
 
@@ -482,13 +482,13 @@ Everything the Orchestrator needs comes from input files.
 INPUT: /new-launch {company_id} {product_id}
 │
 ├── STEP 0A — Setup check + file preparation ──────────────────────────
-│   Check: clients/{company_id}/launches/{product_id}/launch_input.md exists?
-│   NO  → Create all four template files in launch folder → stop → tell client to fill in
+│   Check: clients/{company_id}/launches/{product_id}/input/launch_input.md exists?
+│   NO  → Create all four template files in input/ folder → stop → tell client to fill in
 │   YES → parse launch_input.md sections
 │          → fetch ## Pages (WebFetch) + ## Google Doc (MCP)
 │          → collect ## Notes as-is
 │          → concatenate → raw_launch_text
-│          → save raw_launch_text.txt to launch folder
+│          → save raw_launch_text.txt to processed/ folder
 │
 ├── STEP 0B — Read editorial_notes.md ──────────────────────────────────
 │   Read file if exists → skip comment lines → collect as client_strategic_additions[]
@@ -530,7 +530,7 @@ INPUT: /new-launch {company_id} {product_id}
 │   Source 1: company_profile.writing_guidance (Layer A)
 │   Source 2: product_profile_raw.writing_guidance (Compactor)
 │   Source 3: editorial_notes.md directives → writing_guidance.to_emphasize
-│   Save complete product_profile.json to launch folder
+│   Save complete product_profile.json to processed/ folder
 │
 ├── STEP 4 — Assemble Context Strategist Input ────────────────────────
 │   Extract filtered slices from company_profile.json, product_profile.json,
@@ -806,7 +806,7 @@ researcher. If a thesis cannot be connected to the product's timeliness, it
 is the wrong thesis.
 
 **Output:** `context_strategy.json`
-**Saved to:** `clients/{company_id}/launches/{product_id}/context_strategy.json`
+**Saved to:** `clients/{company_id}/launches/{product_id}/processed/context_strategy.json`
 ```
 world_context_framing
   .structural_forces[]
@@ -926,7 +926,7 @@ interesting but does not sharpen the product's timeliness is weak evidence.
 **Input:** One thesis from `context_strategy.json` + minimal product context
 (see CLAUDE.md Step 6 for the full input assembly).
 **Output:** `wave_candidate_{A|B|C}.json`
-**Saved to:** `clients/{company_id}/launches/{product_id}/wave_candidate_{A|B|C}.json`
+**Saved to:** `clients/{company_id}/launches/{product_id}/processed/wave_candidate_{A|B|C}.json`
 
 ```
 wave_candidate
@@ -1117,7 +1117,7 @@ For surviving waves, the Validator:
 ---
 
 **Output:** `validated_waves.json`
-**Saved to:** `clients/{company_id}/launches/{product_id}/validated_waves.json`
+**Saved to:** `clients/{company_id}/launches/{product_id}/processed/validated_waves.json`
 
 The output carries forward the **full wave data** from each surviving wave —
 wave_narrative, evidence_details (URLs, key_points, source_name, date),
@@ -1258,20 +1258,26 @@ fewer competing signals, the sharper the headline.
 
 **Section 2 — Subheadline**
 
-**Job:** Ground the headline with the full picture — one to two sentences
-that give the journalist the context, the launch, and the outcome. This is
-the elevator pitch: why now + what the company is doing + how it works +
-what changes.
+**Job:** Ground the headline in specifics. Give the journalist the core
+picture in one breath: who is behind this, what they're launching, and
+why it matters now. Clarity over completeness — details belong in Section 4.
 
-**Inputs:**
+**Mandatory inputs:**
 - `{{company_name}}` — who is launching
-- `{{top_level_issue}}` — the context that makes this timely
 - `{{launched_product_name}}` — what is being launched
+
+**Draw from (use what serves the sentence, leave the rest for Section 4):**
+- `{{top_level_issue}}` — the context that makes this timely
 - `{{launched_product_one_liner}}` — the short description of the launch
 - `{{launched_product_target_audience}}` — who this is for
 - `{{launched_product_differentiation_claim}}` — the mechanism (what's new)
 - `{{launched_product_functional_breakdown.user_benefit}}` — the outcome
 - `{{company_industry}}` — journalist context
+
+**Structural rule:** Each sentence carries one idea. Never stack clauses
+("ש-...ו-...ש-..." / "that...and...which..."). A sentence that tries to
+describe the product, its mechanism, its audience, and its differentiation
+in one breath is banned — that's a paragraph pretending to be a sentence.
 
 ---
 
@@ -1493,18 +1499,22 @@ project-root/
 │       ├── company_profile.json               ← Layer A, persisted
 │       └── launches/
 │           └── {product_id}/
-│               ├── launch_input.md            ← created on first run
-│               ├── product_input.md           ← created on first run
-│               ├── editorial_notes.md         ← created on first run
-│               ├── user_stories_input.md      ← created on first run, raw testimonials
-│               ├── user_stories.json          ← structured by User Story Parser
-│               ├── raw_launch_text.txt
-│               ├── raw_gold.json
-│               ├── product_profile_raw.json
-│               ├── product_profile.json       ← Layer B, final, editable
-│               ├── context_strategy.json
-│               ├── wave_candidates_raw.json
-│               ├── validated_waves.json       ← Layer C
+│               ├── input/
+│               │   ├── launch_input.md            ← created on first run
+│               │   ├── product_input.md           ← created on first run
+│               │   ├── editorial_notes.md         ← created on first run
+│               │   └── user_stories_input.md      ← created on first run, raw testimonials
+│               ├── processed/
+│               │   ├── raw_launch_text.txt
+│               │   ├── raw_gold.json
+│               │   ├── product_profile_raw.json
+│               │   ├── product_profile.json       ← Layer B, final, editable
+│               │   ├── context_strategy.json
+│               │   ├── wave_candidate_A.json
+│               │   ├── wave_candidate_B.json
+│               │   ├── wave_candidate_C.json
+│               │   ├── validated_waves.json       ← Layer C
+│               │   └── user_stories.json          ← structured by User Story Parser
 │               ├── briefs/
 │               │   └── brief_final_DD-MM-YYYY_HH-mm-ss.md  ← final deliverable (timestamped)
 │
@@ -1533,8 +1543,8 @@ Output: `clients/{company_id}/company_profile.json`.
 Triggers the full launch flow. Requires an existing company profile —
 if none exists, the Orchestrator tells the client to run `/new-client` first.
 
-Reads input files from `clients/{company_id}/launches/{product_id}/`.
-First run creates four template files in the launch folder and stops.
+Reads input files from `clients/{company_id}/launches/{product_id}/input/`.
+First run creates four template files in the `input/` folder and stops.
 Second run executes the full pipeline.
 Output: `briefs/brief_final_DD-MM-YYYY_HH-mm-ss.md` + all intermediates saved.
 

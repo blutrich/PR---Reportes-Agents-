@@ -32,12 +32,15 @@ clients/
     ├── company_profile.json
     └── launches/
         └── {product_id}/
-            ├── launch_input.md        ← created on first run if missing
-            ├── product_input.md       ← created on first run if missing
-            ├── editorial_notes.md     ← created on first run if missing
-            ├── user_stories_input.md  ← created on first run if missing
-            ├── raw_launch_text.txt
-            └── (all other files added by agents as pipeline runs)
+            ├── input/
+            │   ├── launch_input.md        ← created on first run if missing
+            │   ├── product_input.md       ← created on first run if missing
+            │   ├── editorial_notes.md     ← created on first run if missing
+            │   └── user_stories_input.md  ← created on first run if missing
+            ├── processed/
+            │   └── (all agent outputs saved here as pipeline runs)
+            └── briefs/
+                └── (final deliverables)
 ```
 
 Rules:
@@ -65,17 +68,19 @@ to check whether the client has prepared their input files.
 
 Create the launch folder and subfolders if they do not exist:
 `clients/{company_id}/launches/{product_id}/`
+`clients/{company_id}/launches/{product_id}/input/`
+`clients/{company_id}/launches/{product_id}/processed/`
 `clients/{company_id}/launches/{product_id}/briefs/`
 
 ### Check for launch_input.md
 
-Look for: `clients/{company_id}/launches/{product_id}/launch_input.md`
+Look for: `clients/{company_id}/launches/{product_id}/input/launch_input.md`
 
 **If it does NOT exist — first run setup:**
 
-Use the Write tool to create all four template files inside the launch folder.
+Use the Write tool to create all four template files inside the `input/` folder.
 
-`clients/{company_id}/launches/{product_id}/launch_input.md`:
+`clients/{company_id}/launches/{product_id}/input/launch_input.md`:
 ```markdown
 # Launch Input
 
@@ -93,7 +98,7 @@ Use the Write tool to create all four template files inside the launch folder.
 # Everything under this heading is used as-is.
 ```
 
-`clients/{company_id}/launches/{product_id}/product_input.md`:
+`clients/{company_id}/launches/{product_id}/input/product_input.md`:
 ```markdown
 # Product Input — Authoritative Field Overrides
 # Values defined here overwrite anything the system extracts.
@@ -116,7 +121,7 @@ Use the Write tool to create all four template files inside the launch folder.
 # term_substitution: instead_of: tool | say: service
 ```
 
-`clients/{company_id}/launches/{product_id}/editorial_notes.md`:
+`clients/{company_id}/launches/{product_id}/input/editorial_notes.md`:
 ```markdown
 # Editorial Notes
 # Each active line must be a complete, standalone directive.
@@ -137,7 +142,7 @@ Use the Write tool to create all four template files inside the launch folder.
 # Example: Things to avoid —
 ```
 
-`clients/{company_id}/launches/{product_id}/user_stories_input.md`:
+`clients/{company_id}/launches/{product_id}/input/user_stories_input.md`:
 ```markdown
 # User Stories — Raw Input
 # Paste raw testimonial text below. Any format is fine —
@@ -150,7 +155,7 @@ Use the Write tool to create all four template files inside the launch folder.
 Then use the Write tool to create each file, then stop and tell the client:
 
 "I've created four input files for this launch in:
-`clients/{company_id}/launches/{product_id}/`
+`clients/{company_id}/launches/{product_id}/input/`
 
 - **launch_input.md** — add your sources (URLs, Google Doc, pasted notes)
 - **product_input.md** — set any field values you want to define authoritatively
@@ -200,7 +205,7 @@ Separate each source clearly:
 ```
 
 Save to:
-`clients/{company_id}/launches/{product_id}/raw_launch_text.txt`
+`clients/{company_id}/launches/{product_id}/processed/raw_launch_text.txt`
 
 If this file already exists:
   Ask: "raw_launch_text.txt already exists. Reuse it or replace it?"
@@ -210,7 +215,7 @@ If this file already exists:
 
 ## STEP 0B — Read editorial_notes.md
 
-Read: `clients/{company_id}/launches/{product_id}/editorial_notes.md`
+Read: `clients/{company_id}/launches/{product_id}/input/editorial_notes.md`
 
 If the file does not exist — skip silently. Continue.
 
@@ -232,7 +237,7 @@ reading the structured result.
 
 ### Part 1 — Structure raw stories (if user_stories_input.md has content)
 
-Check: `clients/{company_id}/launches/{product_id}/user_stories_input.md`
+Check: `clients/{company_id}/launches/{product_id}/input/user_stories_input.md`
 
 If the file does NOT exist or contains only comments/empty lines:
   Skip silently. Move to Part 2.
@@ -248,11 +253,11 @@ If the file EXISTS and has content (non-comment lines):
 
   Wait for output.
   The agent saves:
-    `clients/{company_id}/launches/{product_id}/user_stories.json`
+    `clients/{company_id}/launches/{product_id}/processed/user_stories.json`
 
 ### Part 2 — Read structured user stories
 
-Read: `clients/{company_id}/launches/{product_id}/user_stories.json`
+Read: `clients/{company_id}/launches/{product_id}/processed/user_stories.json`
 
 If the file does not exist — skip silently. Continue.
 
@@ -304,7 +309,7 @@ State explicitly at the top of your message to the agent:
 Never pass placeholder names. Always pass actual values.
 
 Wait for output: `product_profile_raw.json`
-Save to: `clients/{company_id}/launches/{product_id}/product_profile_raw.json`
+Save to: `clients/{company_id}/launches/{product_id}/processed/product_profile_raw.json`
 
 ### 2B — Raw Gold
 
@@ -315,14 +320,14 @@ State explicitly:
 "raw_launch_text is: [full text content]"
 
 Wait for output: `raw_gold.json`
-Save to: `clients/{company_id}/launches/{product_id}/raw_gold.json`
+Save to: `clients/{company_id}/launches/{product_id}/processed/raw_gold.json`
 
 ---
 
 ### product_input.md Override Step
 
 After `product_profile_raw.json` is saved, check whether this file exists:
-`clients/{company_id}/launches/{product_id}/product_input.md`
+`clients/{company_id}/launches/{product_id}/input/product_input.md`
 
 If it does NOT exist — skip this step entirely.
 
@@ -438,7 +443,7 @@ From `client_strategic_additions[]` read in Step 0B:
 Produce the complete `product_profile.json` — which is
 `product_profile_raw.json` with the unified `writing_guidance` block injected.
 
-Save to: `clients/{company_id}/launches/{product_id}/product_profile.json`
+Save to: `clients/{company_id}/launches/{product_id}/processed/product_profile.json`
 
 This file is the client's control panel. They can open it, edit any field,
 and re-run downstream agents without repeating the extraction step.
@@ -535,7 +540,7 @@ If any check fails:
     Do not proceed.
 
 If all checks pass:
-  Save to: `clients/{company_id}/launches/{product_id}/context_strategy.json`
+  Save to: `clients/{company_id}/launches/{product_id}/processed/context_strategy.json`
   Move to Step 6.
 
 ---
@@ -597,9 +602,9 @@ Never pass variable placeholder names. Always pass the actual values.
 Wait for all three agents to complete.
 
 Save outputs to:
-  - `clients/{company_id}/launches/{product_id}/wave_candidate_A.json`
-  - `clients/{company_id}/launches/{product_id}/wave_candidate_B.json`
-  - `clients/{company_id}/launches/{product_id}/wave_candidate_C.json`
+  - `clients/{company_id}/launches/{product_id}/processed/wave_candidate_A.json`
+  - `clients/{company_id}/launches/{product_id}/processed/wave_candidate_B.json`
+  - `clients/{company_id}/launches/{product_id}/processed/wave_candidate_C.json`
 
 If any researcher fails:
   Report which researcher failed and what input it received.
@@ -680,7 +685,7 @@ If no waves were approved:
   Do not proceed.
 
 If at least 1 wave was approved:
-  Save to: `clients/{company_id}/launches/{product_id}/validated_waves.json`
+  Save to: `clients/{company_id}/launches/{product_id}/processed/validated_waves.json`
   Tell the client how many waves survived and their classifications.
   Move to Step 8.
 

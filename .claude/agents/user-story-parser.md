@@ -152,6 +152,6 @@ No extra keys. No wrapper objects. No markdown code fences around the JSON.
 
 1. Output the complete JSON object exactly as specified.
 2. Save it to:
-   `clients/{{company_id}}/launches/{{product_id}}/user_stories.json`
+   `clients/{{company_id}}/launches/{{product_id}}/processed/user_stories.json`
 3. Confirm the save with the exact file path.
 4. Output nothing else — no explanations, no commentary, no summary.

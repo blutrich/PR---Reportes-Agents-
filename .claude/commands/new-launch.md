@@ -32,30 +32,30 @@ the pipeline will stop at Step 1 and tell the client to run `/new-client {compan
 The Orchestrator creates four input template files inside the launch folder
 and stops. The client fills them in and runs the command again.
 
-Files created:
+Files created in `input/`:
 - `launch_input.md` — sources: URLs, Google Doc link, pasted notes
 - `product_input.md` — authoritative field overrides (client values win)
 - `editorial_notes.md` — framing and emphasis directives for the brief
-- `user_stories.md` — optional customer testimonials
+- `user_stories_input.md` — optional customer testimonials
 
 ### Second run — input files are filled in
 
 Executes the full pipeline:
 
-**Step 0A** — Reads `launch_input.md`, fetches all sources, assembles
-and saves `raw_launch_text.txt`
+**Step 0A** — Reads `input/launch_input.md`, fetches all sources, assembles
+and saves `processed/raw_launch_text.txt`
 
-**Step 0B** — Reads `editorial_notes.md`, collects emphasis directives
+**Step 0B** — Reads `input/editorial_notes.md`, collects emphasis directives
 
-**Step 0C** — Reads `user_stories.md`, collects testimonials (optional)
+**Step 0C** — Reads `input/user_stories_input.md`, collects testimonials (optional)
 
 **Step 1** — Checks for company profile, runs Company Profiler if needed
 
 **Step 2** — Runs Launch Compactor and Raw Gold in parallel,
-then applies `product_input.md` overrides
+then applies `input/product_input.md` overrides
 
 **Step 3** — Merges writing_guidance from all sources, saves
-`product_profile.json`
+`processed/product_profile.json`
 
 **Steps 4–10** — Added as agents are built and tested
 

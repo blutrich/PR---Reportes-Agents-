@@ -22,6 +22,7 @@ Hebrew
 # instead_of: cheap | say: affordable
 
 instead_of: משתמשים | say: לקוחות
+instead_of: אדם | say: לקוח
 instead_of: שליטה כלכלית | say: מסוגלות עצמית כלכלית
 
 ## Company URLs
