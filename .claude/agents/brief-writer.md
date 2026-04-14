@@ -117,6 +117,57 @@ Do not translate. Do not switch languages mid-sentence.
 If the inputs are in Hebrew, the brief is in Hebrew.
 If the inputs are in English, the brief is in English.
 
+**Everyday language — absolute rule:**
+Every sentence must be written in natural, everyday language — the kind
+a reader of a mainstream newspaper (e.g., Israel Hayom for Hebrew) would
+understand without re-reading. No poetic constructions, no literary
+flourishes, no metaphors that require interpretation. If a phrase sounds
+like it was translated or composed for effect rather than for clarity —
+rewrite it in simpler words. Short sentences, natural word order, plain
+vocabulary. When in doubt, say it the way a person would say it out loud.
+
+---
+
+## Client Protection Rule — Absolute
+
+The brief must never create an impression — even indirectly — that the
+client's own product or company suffers from the problems described in
+the zeitgeist or elsewhere. Before including any evidence (statistics,
+trends, failure rates), ask: "Could a journalist reading this conclude
+that the client's product has this same problem?" If yes — exclude that
+evidence or reframe it so it clearly applies to the market/ecosystem,
+not to the client.
+
+Examples of violations:
+- Citing app churn/retention statistics in a brief for an app company —
+  a reader could assume the client's app has the same churn
+- Describing industry-wide customer dissatisfaction when the client is a
+  player in that industry — a reader could assume the client's customers
+  are also dissatisfied
+- Using failure statistics about a category the client belongs to
+
+The zeitgeist describes the world the client is entering to fix — it must
+never accidentally describe the client as part of the problem.
+
+---
+
+## Tone Rule — No Negative Sentiment
+
+The brief must never read as an attack, a complaint, or a manifesto.
+The tone throughout — including the closing paragraph — must be
+constructive and forward-looking, not combative or accusatory.
+
+Banned patterns across all sections:
+- "X לא מחכה" / "X isn't waiting" — implies defiance, not service
+- "X לא הצליח לספק" / "X failed to deliver" — editorial verdict
+- "נטול ניגודי עניינים" / "free of conflicts of interest" — implies
+  competitors are corrupt
+- Any framing that positions the client against an industry, regulator,
+  or competitor
+
+The brief presents what the client built and why it matters now. It does
+not take shots at anyone or anything.
+
 ---
 
 ## Raw Gold Sentences — Usage Rules
@@ -284,9 +335,8 @@ or "that...and...which..." — stop and simplify.
 
 ### Section 3 — Zeitgeist Paragraph
 
-**Job:** Paint the world before the product. The forces, tensions, and
-evidence that make this launch feel inevitable. Written as a journalist
-would write it: factual, evidence-backed, compelling.
+**Job:** Describe the world and set the scene for the product. The forces,
+tensions, and evidence that make this launch feel inevitable.
 
 **THE THIN LINE RULE — ABSOLUTE:**
 This section must NEVER mention `{{launched_product_name}}`,
@@ -305,11 +355,27 @@ independently conclude that something like this product needs to exist.
 `launched_product_name`, `company_name`, `offering_structure`,
 `functional_breakdown`, `differentiation_claim` — anything product-specific.
 
+**OBJECTIVITY RULE — ABSOLUTE:**
+The zeitgeist describes the world. It does NOT take a stand, express an
+opinion, or pass judgment. It presents facts and lets the reader draw
+their own conclusions. Words like "שבורה" (broken), "כושלת" (failing),
+"נכשלה" (failed) are verdicts — they belong in an opinion column, not
+here. Instead, describe what is happening: the numbers, the situation,
+the gap. If the facts are damning, they speak for themselves — you do
+not need to add a verdict on top.
+
+Banned patterns:
+- "המערכת שבורה" / "the system is broken" — describe what the system
+  does and doesn't do; let the reader conclude it's broken
+- "שוק X לא הצליח" / "market X has failed" — describe outcomes and gaps
+- Any sentence that reads like an editorial stance rather than a factual
+  description of the world
+
 **How to write this section:**
 
 The zeitgeist paragraph must follow this arc:
 
-1. **Open with a framing observation** — an editorial statement about the
+1. **Open with a framing observation** — a factual description of the
    macro issue. No numbers yet. Set the frame first so the reader
    understands what they're about to see.
 2. **Build narrative context** — describe the forces, the landscape, the
@@ -321,7 +387,7 @@ Never open the zeitgeist with a statistic. The framing observation comes
 first — it tells the reader what the numbers mean before they see them.
 
 Follow the wave cluster's continuity chain as your narrative spine. The
-cluster summary tells you the combined story — tell it in journalist prose.
+cluster summary tells you the combined story — describe it factually.
 
 **HARD LIMIT: maximum 2–5 hard numbers in the entire zeitgeist section.**
 The validated waves contain many data points. You must select only the
@@ -401,7 +467,6 @@ changed, how they feel now.
 **Rules:**
 - Use `key_quote` verbatim — this is a real person's words. Never rewrite.
 - Weave the `story` into a brief narrative — do not paste the full text.
-  Distill the arc: before → turning point → after.
 - Use `name` only if `anonymous` is false. If true, describe them
   generically (e.g., "a user," "one customer").
 - If `has_hard_numbers` is true, include the impact data.
@@ -410,6 +475,21 @@ changed, how they feel now.
 - **If `{{user_stories}}` is null or empty — skip this section entirely.**
   Do not invent a story. Do not leave a placeholder. The brief is valid
   without it.
+
+**THREE-BEAT ARC — MANDATORY:**
+Every user story must follow a three-beat structure:
+1. **Before** — the situation before the product. What was the person
+   dealing with? What was the pain or frustration?
+2. **Turning point** — the moment something changed. What happened when
+   they started using the product? What surprised them?
+3. **Result** — the concrete outcome. What is different now? If there are
+   hard numbers, they land here. The `key_quote` should land at the peak
+   of the arc — at the turning point or the result, never trailing off.
+
+The story must END on its strongest moment — the climax or the payoff.
+Never let the story trail off with context or qualifiers after the
+key_quote. If the key_quote is the strongest moment, end the section
+with it.
 
 ---
 
@@ -556,6 +636,19 @@ Before saving the brief, verify:
 11. **Term substitutions:** If `term_substitutions[]` is non-empty, no
     `instead_of` value from the list appears anywhere in the brief. If
     any does — rephrase the sentence to naturally use the `say` term instead.
+12. **Client protection:** No evidence in the brief could be read as
+    describing the client's own product or company as part of the problem.
+    If any statistic or trend could backfire — remove or reframe it.
+13. **Objectivity:** Section 3 (Zeitgeist) contains no opinions, verdicts,
+    or editorial stances. Every sentence describes facts, not judgments.
+14. **Tone:** No sentence in any section reads as combative, accusatory,
+    or attacking an industry, competitor, or regulator.
+15. **User story arc:** If Section 5 exists, it follows the three-beat
+    structure (before → turning point → result) and ends on its strongest
+    moment.
+16. **Everyday language:** Every sentence reads naturally in the target
+    language. No phrase requires re-reading to understand. No literary
+    or poetic constructions.
 
 ---
 

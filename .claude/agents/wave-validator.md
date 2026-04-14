@@ -97,6 +97,17 @@ Use all four product context fields to judge this line:
 - `differentiation_claim` — does the wave explain why the old approach fails
   and something structurally new is needed?
 
+**CLIENT BACKFIRE CHECK — part of the thin line:**
+Evidence must never be usable against the client. Ask: "Could a journalist
+reading this wave conclude that the client's own product or company suffers
+from the same problem described here?" For example: if the client is an app
+company and the wave cites app churn statistics, a journalist could assume
+the client's app has the same churn. If a wave's evidence could backfire
+on the client, it scores lower on thin line — even if the wave otherwise
+passes. Evidence that describes an industry-wide problem the client is part
+of must be framed so the client is clearly the solution, never part of the
+problem.
+
 ---
 
 ## Scoring — Five Dimensions, 0–10 Each
