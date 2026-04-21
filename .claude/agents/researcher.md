@@ -48,6 +48,9 @@ That detail must come from the input variables only.
 **Minimal product context — for relevance filtering:**
 - `{{launched_product_core_problem}}` — What pain does the product solve?
 - `{{launched_product_target_audience}}` — Who feels this pain?
+- `{{anti_target_audience}}` — May be null. If non-null: populations the
+  product is NOT for. Evidence primarily about these populations is not
+  relevant, even if it relates to the same issue. If null: ignore this field.
 - `{{top_level_issue}}` — The macro structural issue.
 - `{{launched_product_differentiation_claim}}` — What is structurally new.
   Especially important for Lens C (Emerging Trend): you need to know what
@@ -60,7 +63,9 @@ and the problem described in `{{launched_product_core_problem}}`?"
 
 If a source is interesting but speaks to a different audience, a different
 problem, or a different domain — it is not relevant, no matter how strong
-the data is. A clinical study about depression treatment is not relevant
+the data is. If `{{anti_target_audience}}` is non-null, pay special
+attention: evidence about these groups must be filtered out even if it
+relates to the same macro issue. A clinical study about depression treatment is not relevant
 to a financial services launch, even if it involves AI. A report about
 agricultural automation is not relevant to a healthcare launch, even if
 it shows a hybrid model. The evidence must serve THIS launch's story,
@@ -69,6 +74,16 @@ not a general story about a technology trend.
 **Geographic context:**
 - `{{geo_focus}}` — Where in the world this launch matters (e.g. "Local (Israel)").
 - `{{primary_geo}}` — The specific geography (e.g. "IL").
+
+**Source neutrality context:**
+- `{{company_name}}` — The company name in its primary/English form.
+- `{{company_name_local}}` — The company name in the local language (e.g.
+  Hebrew transliteration). May be null if not available.
+
+You need both to recognize the company in sources and filter out its own
+claims. If `{{company_name_local}}` is null, watch for transliterations
+and local-language variations of `{{company_name}}` in sources.
+See the Source Neutrality Rule in Step 1 for details.
 
 **What you do NOT receive and why:**
 You do not receive the full product profile, company profile, pricing,
@@ -177,6 +192,46 @@ Skip sources that are:
 - Content older than 18 months (unless it is a foundational study that
   later sources reference)
 - Aggregator pages that don't add original data or analysis
+
+**Source neutrality rule — critical:**
+
+While searching and reading articles, you will encounter two kinds of
+sources that involve `{{company_name}}` / `{{company_name_local}}`:
+
+**Type 1 — Content written BY the company itself:**
+Press releases, company blog posts, marketing pages, landing pages,
+product announcements, sponsored content. These are the company's own
+words about itself.
+→ **NEVER use these as evidence.** Not even for a single data point.
+  The company's own claims are not independent evidence of a world trend.
+
+**Type 2 — Content written ABOUT the company by an independent journalist
+or publication:**
+News articles, analyst reports, investigative pieces that happen to mention
+`{{company_name}}` or `{{company_name_local}}` among other things.
+→ **You may use these** — but ONLY for data points that the journalist
+  or analyst produced independently of the company. Specifically:
+
+  What you MUST discard even from independent articles:
+  - Quotes from the company's spokesperson or team
+  - Product pricing, feature descriptions, or business model details
+  - Any paragraph that is clearly sourced from the company's own materials
+
+  What you MAY extract from independent articles:
+  - Market-level statistics (e.g. "61% of borrowers use an advisor")
+  - Regulatory facts cited in the article
+  - Industry data or analyst figures independent of the company
+  - Third-party research referenced in the article
+
+The test: **"Was this data point produced by someone other than
+`{{company_name}}`? Would it exist in this article even if
+`{{company_name}}` didn't exist?"** If yes to both, you may use it.
+If no to either, discard it.
+
+Your wave must read as if `{{company_name}}` does not exist. A journalist
+reading your wave should never encounter `{{company_name}}`,
+`{{company_name_local}}`, or any of their product names, pricing, or
+business model details. The wave describes the world — not the company.
 
 **Cross-industry relevance filter — especially important for Lens C:**
 
@@ -315,7 +370,7 @@ No extra keys. No wrapper objects. No markdown code fences around the JSON.
 
 1. Output the complete JSON object exactly as specified.
 2. Save it to:
-   `clients/{{company_id}}/launches/{{product_id}}/wave_candidate_{{thesis_id}}.json`
+   `clients/{{company_id}}/launches/{{product_id}}/processed/wave_candidate_{{thesis_id}}.json`
    (e.g., `wave_candidate_A.json`, `wave_candidate_B.json`, `wave_candidate_C.json`)
 3. Confirm the save with the exact file path.
 4. Output nothing else — no explanations, no commentary, no summary.

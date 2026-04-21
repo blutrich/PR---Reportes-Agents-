@@ -1,0 +1,60 @@
+{
+  "raw_gold": [
+    {
+      "text": "ליווי הלקוח בייעוץ המשכנתא של רייזאפ מבוסס על עבודה משותפת של AI ויועץ משכנתאות אנושי, כתף אל כתף: ה-AI מנתח את נתוני ההכנסות וההוצאות, מצב החשבונות והתחייבויות קיימות, ומריץ סימולציות וחיזויים לתרחישי החזר לאורך זמן (מסלולים, ריביות, הצמדה ושינויים עתידיים), והיועץ משתמש בתובנות כדי לבנות עם הלקוח תמהיל משכנתא מותאם, להגדיר גבולות סיכון, ולהוביל החלטות מעשיות מול הבנקים.",
+      "source": "Client Notes",
+      "type": "insight",
+      "strength": 5,
+      "usage_note": "The most complete articulation of the hybrid AI+human mortgage advisory model. Contains the full mechanism chain: AI analyzes income, expenses, account status and existing obligations, runs simulations and forecasts across repayment scenarios (tracks, interest rates, indexation, future changes), then the human advisor uses those insights to build a tailored mortgage mix, define risk boundaries, and lead practical decisions against banks. Essential for any paragraph explaining how the service works and why it differs from traditional mortgage consulting."
+    },
+    {
+      "text": "הליווי נשען על המנגנון המרכזי של רייזאפ — תזרים חודשי אוטומטי בהתאמה אישית, הנתמך באינטגרציה מלאה לחשבונות הבנק וכרטיסי האשראי, התראות שוטפות וקהילה תומכת.",
+      "source": "Client Notes",
+      "type": "claim",
+      "strength": 5,
+      "usage_note": "Shows the mortgage advisory is not a standalone offering — it sits on top of an existing automated infrastructure (personalized monthly cash flow engine, full bank and credit card integration, ongoing alerts, supportive community). Explains why this mortgage service has a structural advantage over generic mortgage brokers who lack continuous financial visibility into the client's life."
+    },
+    {
+      "text": "כך נוצרת תמונת מצב שקופה שמחברת בין ההחזר החודשי לבין החיים עצמם, ומאפשרת בחירות שקולות לאורך זמן.",
+      "source": "Client Notes",
+      "type": "insight",
+      "strength": 5,
+      "usage_note": "The key outcome sentence — connects the monthly mortgage repayment to the person's actual life, enabling informed long-term choices. Frames the service as producing transparency that bridges the gap between a financial obligation and lived reality. Strong closing line for a press release or spokesperson quote."
+    },
+    {
+      "text": "פגישה עם יועץ משכנתא שבה תתכננו את התמהיל האלטרנטיבי הנכון לכם בשביל לממש את החסכון הפוטנציאלי המשמעותי במשכנתא שלכם",
+      "source": "Client Notes",
+      "type": "claim",
+      "strength": 4,
+      "usage_note": "Describes the core deliverable of the focused track — planning the right alternative mortgage mix to realize significant potential savings. The word 'alternative' implies the current mix is suboptimal, and 'significant potential savings' sets a concrete expectation. Useful for explaining the entry-level offering."
+    },
+    {
+      "text": "הוא ידאג גם לעשות עבורכם את כל המשא ומתן מול הבנקים, והבירוקרטיה בשביל שלכם יהיה ראש שקט.",
+      "source": "Client Notes",
+      "type": "claim",
+      "strength": 4,
+      "usage_note": "Defines the premium track's added value — the advisor handles all bank negotiations and bureaucracy so the client gets peace of mind. The phrase 'peace of mind' (ראש שקט) is the emotional promise of the higher tier. Useful for differentiating between service tracks and for value-proposition paragraphs."
+    },
+    {
+      "text": "ומריץ סימולציות וחיזויים לתרחישי החזר לאורך זמן (מסלולים, ריביות, הצמדה ושינויים עתידיים)",
+      "source": "Client Notes",
+      "type": "insight",
+      "strength": 4,
+      "usage_note": "Specifies exactly what the AI does in the mortgage context — simulations and forecasts across repayment scenarios including tracks, interest rates, indexation, and future changes. This level of specificity differentiates from vague 'AI-powered' claims. Strong for technical credibility in the mechanism paragraph."
+    },
+    {
+      "text": "את כל התוכניות אפשר לשלם ב-12 תשלומים",
+      "source": "Client Notes",
+      "type": "claim",
+      "strength": 3,
+      "usage_note": "Demonstrates pricing accessibility — all plans can be split into 12 installments. Removes the irony of paying a lump sum for help with a financial burden. Useful in pricing or accessibility paragraphs."
+    },
+    {
+      "text": "להגדיר גבולות סיכון, ולהוביל החלטות מעשיות מול הבנקים",
+      "source": "Client Notes",
+      "type": "insight",
+      "strength": 4,
+      "usage_note": "Frames the human advisor's unique role — defining risk boundaries and leading practical decisions against banks. Positions the advisor as an advocate who protects the client, not just an information provider. Strong for paragraphs about the human element in the service."
+    }
+  ]
+}

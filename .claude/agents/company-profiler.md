@@ -51,8 +51,12 @@ Client-provided (use exactly as given — do not scrape for these):
 - `{{company_id}}`
 - `{{content_language}}`
 - `{{company_target_audience}}`
+- `{{company_anti_target_audience}}` — may be null if not provided
 - `{{spokesperson_name}}`
 - `{{spokesperson_title}}`
+- `{{global_term_substitutions}}` — array of `{ "instead_of": "...", "say": "..." }` objects.
+  May be an empty array if the client did not define any.
+  Pass through to output as-is. Do not extract or infer substitutions from scraped content.
 
 To be extracted from scraped content:
 - `{{company_urls[]}}` — scrape all of these
@@ -189,6 +193,8 @@ No markdown code fences.
 
   "company_target_audience": "{{company_target_audience}}",
 
+  "company_anti_target_audience": "{{company_anti_target_audience}}",
+
   "company_industry": "",
 
   "company_one_liner_mission": "",
@@ -201,7 +207,13 @@ No markdown code fences.
 
   "stories_for_conversion": "",
 
-  "product_preferred_terms": [],
+  "brand_identity_vocabulary": [
+    {
+      "term": "",
+      "preferred_adjectives": [],
+      "forbidden_adjectives": []
+    }
+  ],
 
   "search_config": {
     "geo_focus": "",
@@ -213,7 +225,8 @@ No markdown code fences.
 
   "writing_guidance": {
     "global_forbidden_words": [],
-    "global_tone_rules": []
+    "global_tone_rules": [],
+    "global_term_substitutions": []
   },
 
   "explicit_competitors": []
@@ -257,13 +270,29 @@ company_one_liner_mission:
 spokesperson.speaking_style:
   Analyze from quotes, blog posts, or interviews on the
   scraped pages attributed to {{spokesperson_name}}.
-  Address:
-  - Primary rhetorical role (guide / peer / authority /
-    challenger)
-  - Emotional posture toward the audience
-  - Use of personal vs collective framing
-  - Balance between inspiration and instruction
-  - Relationship to expertise and responsibility
+
+  The output must be a prose character sketch — a short paragraph
+  (3–5 sentences) that a ghostwriter could read and immediately
+  know how to write in this person's voice. Do not produce a
+  bulleted checklist. Write it as continuous text.
+
+  The sketch must address all of the following, woven naturally:
+  - Primary rhetorical role (guide-peer / mentor / authority /
+    challenger / witness) — name it in the first sentence
+  - Emotional register toward the audience (warm / clinical /
+    urgent / conspiratorial / etc.)
+  - Use of personal ("I") vs collective ("we") vs audience-
+    directed ("you") framing — and what that signals
+  - How they handle vulnerability and authority — do they lead
+    with experience or with credentials? Do they admit difficulty
+    or project certainty?
+  - Signature rhetorical moves — e.g., pairs opposites, uses
+    rhetorical questions, builds from personal anecdote to
+    general principle, names what others avoid saying
+
+  The sketch should let a writer produce a quote that sounds
+  like this specific person — not a generic executive.
+
   If no quotes found — write "Unknown".
 
 stories_for_conversion:
@@ -274,12 +303,24 @@ stories_for_conversion:
   language if present.
   If none found — write "Unknown".
 
-product_preferred_terms:
-  Terms the brand consistently uses to describe its product,
-  methodology, or category.
+brand_identity_vocabulary:
+  Words and phrases that are core to the brand's identity —
+  terms the brand consistently uses to describe its mission,
+  methodology, values, or category.
   Extract only terms that appear repeatedly or are clearly
   intentional brand language.
-  Each item is a single term or short phrase.
+  Each entry is an object with three fields:
+  - "term": the identity word or phrase
+  - "preferred_adjectives": adjectives the brand consistently
+    pairs with this term on its pages. Extract from actual usage
+    patterns — do not invent adjectives.
+  - "forbidden_adjectives": adjectives that would contradict
+    the brand's framing of this term. Derive from the brand's
+    tone and positioning — e.g., if the brand frames financial
+    management as empowerment, adjectives implying limitation
+    or failure are forbidden for that term.
+  If no preferred or forbidden adjectives can be identified
+  for a term, use empty arrays — never omit the fields.
 
 search_config.geo_focus:
   STRICT ENUM — pick exactly one:
@@ -310,6 +351,13 @@ search_config.scope_confidence:
 search_config.scope_signals:
   Specific strings from scraped content that determined
   geo_focus. Example: "Pricing in NIS", "Bank Leumi mentioned"
+
+writing_guidance.global_term_substitutions:
+  Copy `{{global_term_substitutions}}` exactly as provided.
+  Each entry is an object: { "instead_of": "...", "say": "..." }.
+  If the client provided an empty array — write an empty array [].
+  Do not extract or infer substitutions from scraped content.
+  This field is client-defined only.
 
 writing_guidance.global_forbidden_words:
   Words or phrases that align with the rejected status quo

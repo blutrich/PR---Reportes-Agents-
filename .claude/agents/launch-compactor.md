@@ -136,6 +136,14 @@ Every key in this schema must appear in your output — no additions, no omissio
     "payment_flexibility": "Any installment, deferred payment, or flexible payment options stated in the source. Null if not mentioned."
   },
 
+  "launched_product_identity_vocabulary": [
+    {
+      "term": "Words and phrases that are core to this specific launch's identity — terms used repeatedly or intentionally in the launch materials to describe the product, its mechanism, or its value. Only extract terms specific to this launch, not general brand terms.",
+      "preferred_adjectives": ["Adjectives the source consistently pairs with this term. Extract from actual usage patterns — do not invent."],
+      "forbidden_adjectives": ["Adjectives that would contradict the source's framing of this term. Derive from the source's positioning — if the source frames something as empowerment, adjectives implying limitation are forbidden for that term."]
+    }
+  ],
+
   "launched_product_hard_stats": [
     "Every specific number, percentage, timeframe, ratio, or measurable claim present in the source. Each entry is a complete self-contained statement. Never round. Never approximate. Exactly as written."
   ],
@@ -154,11 +162,6 @@ Every key in this schema must appear in your output — no additions, no omissio
   },
 
   "top_level_issue": {
-    "value": "DERIVED — see derivation rules below.",
-    "derived": true
-  },
-
-  "top_level_primary_subdomain": {
     "value": "DERIVED — see derivation rules below.",
     "derived": true
   },
@@ -186,13 +189,13 @@ Every key in this schema must appear in your output — no additions, no omissio
 
 ---
 
-## Derived Fields — top_level_issue and top_level_primary_subdomain
+## Derived Field — top_level_issue
 
-These two fields require a single structured inference step.
+This field requires a single structured inference step.
 This is the ONLY inference permitted in this agent.
 All other fields are extraction-only.
 
-**What these fields are:**
+**What this field is:**
 
 `top_level_issue` — the canonical public macro-level structural issue
 that provides the external context for why this product exists.
@@ -202,10 +205,7 @@ the audience faces. A journalist or policy researcher would name this
 issue when writing about the broader topic, completely independently
 of this product.
 
-`top_level_primary_subdomain` — the specific slice of `top_level_issue`
-that is most directly relevant to this product's audience and core problem.
-
-**How to derive them — follow these steps in order:**
+**How to derive it — follow these steps in order:**
 
 Step 1: Read `launched_product_core_problem` and `launched_product_target_audience`
 that you just extracted.
@@ -215,17 +215,12 @@ not solvable by this company alone — creates the environment in which this
 problem exists and persists?"
 That structural condition is `top_level_issue`.
 
-Step 3: Ask — "Within that structural issue, what is the specific
-sub-pressure or sub-domain that this particular audience experiences
-most directly in their daily or professional life?"
-That is `top_level_primary_subdomain`.
-
-**Rules for both derived fields:**
+**Rules:**
 - Express as neutral, category-level language — not marketing language
-- Neither should mention the product, the company, or the solution
-- Both must feel like terms a journalist, economist, or policy researcher would use
-- Both must be in the same language as the rest of the output
-- Both are marked `"derived": true` — this flag is mandatory
+- Must not mention the product, the company, or the solution
+- Must feel like a term a journalist, economist, or policy researcher would use
+- Must be in the same language as the rest of the output
+- Marked `"derived": true` — this flag is mandatory
 
 **Wrong:** "The complexity of managing personal finances" — product framing
 **Right:** A structural category that exists whether or not this product exists
@@ -244,8 +239,7 @@ Do NOT add a field to `gaps[]` if:
 - The field is null because it describes something optional that simply
   wasn't mentioned (null is a valid value — not a gap for optional fields)
 
-Do NOT add `top_level_issue` or `top_level_primary_subdomain` to `gaps[]` —
-these are always derived.
+Do NOT add `top_level_issue` to `gaps[]` — it is always derived.
 
 **These three fields, if present in gaps[], will trigger a stop-and-ask
 by the Orchestrator before the pipeline continues:**
@@ -273,6 +267,6 @@ by the Orchestrator before the pipeline continues:**
 
 1. Output the complete JSON object exactly as specified.
 2. Save it to:
-   `clients/{{company_id}}/launches/{{product_id}}/product_profile_raw.json`
+   `clients/{{company_id}}/launches/{{product_id}}/processed/product_profile_raw.json`
 3. Confirm the save with the exact file path.
 4. Output nothing else — no explanations, no commentary, no summary.

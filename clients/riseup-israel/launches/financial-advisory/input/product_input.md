@@ -7,7 +7,7 @@
 
 launched_product_name: ליווי כלכלי אישי
 
-launched_product_target_audience: מיועד לשכירים ולמשפחות מעמד הביניים החווים עומס כלכלי וחוסר ודאות, וכן לאנשי היי-טק ובעלי הכנסות גבוהות המתמודדים עם ערפל פיננסי ומורכבות שאינה מתפוגגת מעצמה.
+launched_product_target_audience: מיועד לשכירים, למשפחות ממעמד הביניים וגם לאנשי היי־טק ובעלי הכנסות גבוהות — לא רק למי שנמצא במצוקה, אלא לכל מי שרוצה להבין, לשלוט ולנהל טוב יותר את הכסף שלו: בין אם הם חווים עומס, ערפל וחוסר ודאות פיננסית, ובין אם הם מרוויחים היטב אך עדיין חסרה להם תחושת שליטה וביטחון.
 
 launched_product_differentiation_claim: זהו מוצר ניהול תזרים אישי הראשון שבליבו יש שיתוף הפעולה ההדוק בין בינה מלאכותית לבין יועץ פיננסי אנושי
 
@@ -21,4 +21,11 @@ launched_product_functional_breakdown.user_benefit: ליווי צמוד וממש
 
 top_level_issue: יוקר המחיה
 
-top_level_primary_subdomain: שחיקת הכנסה פנויה
+# --- Term Substitutions (launch-specific) ---
+# Override or add to company-level substitutions for this launch only.
+# Format: term_substitution: instead_of: X | say: Y
+# One substitution per line. Remove the # to activate.
+#
+# term_substitution: instead_of: consulting | say: advisory
+# term_substitution: instead_of: tool | say: service
+

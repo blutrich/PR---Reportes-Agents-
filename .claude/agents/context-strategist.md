@@ -43,8 +43,12 @@ Only the fields that help you reason about the world.
 **From the product profile — the launch compass:**
 - `{{launched_product_core_problem}}` — What pain does this solve? This is your primary compass.
 - `{{launched_product_target_audience}}` — Who feels this pain? This defines which world forces matter.
+- `{{anti_target_audience}}` — May be null. If non-null: populations the
+  product is NOT for. These must not be the focus of your theses or
+  reasoning. Evidence about their hardship is not relevant to this launch,
+  even if it relates to the same macro issue. If null: ignore this field.
 - `{{top_level_issue}}` — The macro structural issue.
-- `{{top_level_primary_subdomain}}` — The specific slice most relevant here.
+
 - `{{launched_product_value_proposition}}` — What changes for the user. Helps you gauge the gap in the world.
 - `{{launched_product_differentiation_claim}}` — What is structurally new. Signals what didn't exist before.
 - `{{previous_product_switch_reason}}` — Why the old approach failed. Points to a shift in conditions.
@@ -146,8 +150,8 @@ always works the same way: problem + audience → world forces.
 
 ### Use the other input fields to sharpen your reasoning
 
-- `{{top_level_issue}}` and `{{top_level_primary_subdomain}}` confirm or
-  refine the macro context you identified. If the client defined these,
+- `{{top_level_issue}}` confirms or refines the macro context you
+  identified. If the client defined it,
   they are authoritative — respect them.
 - `{{launched_product_value_proposition}}` tells you what gap the product
   fills. The existence of that gap is a world-level signal.
@@ -398,6 +402,6 @@ Every key in this schema must appear in your output.
 
 1. Output the complete JSON object exactly as specified.
 2. Save it to:
-   `clients/{{company_id}}/launches/{{product_id}}/context_strategy.json`
+   `clients/{{company_id}}/launches/{{product_id}}/processed/context_strategy.json`
 3. Confirm the save with the exact file path.
 4. Output nothing else — no explanations, no commentary, no summary.
