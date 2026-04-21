@@ -1,0 +1,77 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply leading-relaxed;
+  }
+
+  h1, h2, h3, h4 {
+    @apply font-serif;
+  }
+
+  /* RTL-aware scrollbar styling */
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    @apply bg-cream-100;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-cream-300 rounded-full;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-ink-muted;
+  }
+}
+
+@layer components {
+  .badge {
+    @apply inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium;
+  }
+  .badge-extracted {
+    @apply badge bg-cream-200 text-ink-light;
+  }
+  .badge-user {
+    @apply badge bg-accent/10 text-accent;
+  }
+  .badge-status {
+    @apply badge;
+  }
+
+  .card {
+    @apply bg-white rounded-lg border border-cream-200 p-5;
+  }
+
+  .btn {
+    @apply inline-flex items-center justify-center px-4 py-2 rounded-lg font-medium
+           transition-colors duration-150 cursor-pointer;
+  }
+  .btn-primary {
+    @apply btn bg-accent text-white hover:bg-accent-dark;
+  }
+  .btn-secondary {
+    @apply btn bg-cream-100 text-ink hover:bg-cream-200 border border-cream-300;
+  }
+  .btn-ghost {
+    @apply btn text-ink-light hover:bg-cream-100;
+  }
+
+  .input-field {
+    @apply w-full px-3 py-2 rounded-lg border border-cream-300 bg-white
+           text-ink placeholder:text-ink-muted
+           focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent
+           transition-colors;
+  }
+
+  .section-title {
+    @apply font-serif text-xl text-ink mb-3;
+  }
+
+  /* Hebrew content areas: right-aligned, RTL */
+  .he-content {
+    direction: rtl;
+    text-align: right;
+  }
+}
