@@ -59,7 +59,7 @@ then applies `input/product_input.md` overrides
 
 **Steps 4–10** — Added as agents are built and tested
 
-Final output: `brief_final.md`
+Final output: `briefs/{timestamp}/brief_edited.md`
 
 ---
 
