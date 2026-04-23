@@ -31,7 +31,7 @@ function determineLaunchStatus(launchDir) {
   const hasStrategy = fileExists(path.join(launchDir, 'processed/context_strategy.json'))
   const hasWaves = fileExists(path.join(launchDir, 'processed/validated_waves.json'))
   const briefsDir = path.join(launchDir, 'briefs')
-  const hasBriefs = fileExists(briefsDir) && fs.readdirSync(briefsDir).filter(f => f.endsWith('.md')).length > 0
+  const hasBriefs = fileExists(briefsDir) && fs.readdirSync(briefsDir, { withFileTypes: true }).filter(d => d.isDirectory()).length > 0
 
   if (hasBriefs) return 'brief_review'
   if (hasWaves) return 'research_review'
@@ -44,14 +44,19 @@ function determineLaunchStatus(launchDir) {
 function getBriefsList(launchDir) {
   const briefsDir = path.join(launchDir, 'briefs')
   if (!fileExists(briefsDir)) return []
-  return fs.readdirSync(briefsDir)
-    .filter(f => f.endsWith('.md'))
+  return fs.readdirSync(briefsDir, { withFileTypes: true })
+    .filter(d => d.isDirectory())
+    .map(d => d.name)
     .sort()
     .reverse()
-    .map(f => {
-      const match = f.match(/brief_final_(\d{2})-(\d{2})-(\d{4})_(\d{2})-(\d{2})-(\d{2})/)
-      const date = match ? `${match[3]}-${match[2]}-${match[1]} ${match[4]}:${match[5]}` : f
-      return { filename: f, date }
+    .map(timestamp => {
+      const subDir = path.join(briefsDir, timestamp)
+      const hasOriginal = fileExists(path.join(subDir, 'brief.md'))
+      const hasEdited = fileExists(path.join(subDir, 'brief_edited.md'))
+      const hasNotes = fileExists(path.join(subDir, 'editor_notes.md'))
+      const match = timestamp.match(/(\d{2})-(\d{2})-(\d{4})_(\d{2})-(\d{2})-(\d{2})/)
+      const date = match ? `${match[3]}-${match[2]}-${match[1]} ${match[4]}:${match[5]}` : timestamp
+      return { timestamp, date, hasOriginal, hasEdited, hasNotes }
     })
 }
 
@@ -82,7 +87,7 @@ app.get('/api/clients', (req, res) => {
               launched_product_one_liner: productProfile?.launched_product_one_liner || null,
               status: determineLaunchStatus(launchDir),
               briefs_count: briefs.length,
-              latest_brief: briefs[0]?.filename || null,
+              latest_brief: briefs[0]?.timestamp || null,
             }
           })
       }
@@ -153,18 +158,27 @@ app.get('/api/clients/:companyId/launches/:productId/briefs', (req, res) => {
   res.json(getBriefsList(launchDir))
 })
 
-// Get latest brief
+// Get latest brief (prefer edited, fall back to original)
 app.get('/api/clients/:companyId/launches/:productId/brief/latest', (req, res) => {
   const launchDir = path.join(CLIENTS_DIR, req.params.companyId, 'launches', req.params.productId)
   const briefs = getBriefsList(launchDir)
   if (briefs.length === 0) return res.status(404).send('No briefs found')
-  const content = fs.readFileSync(path.join(launchDir, 'briefs', briefs[0].filename), 'utf-8')
+  const latest = briefs[0]
+  const briefsDir = path.join(launchDir, 'briefs', latest.timestamp)
+  const editedPath = path.join(briefsDir, 'brief_edited.md')
+  const originalPath = path.join(briefsDir, 'brief.md')
+  const filePath = fileExists(editedPath) ? editedPath : originalPath
+  if (!fileExists(filePath)) return res.status(404).send('Brief not found')
+  const content = fs.readFileSync(filePath, 'utf-8')
   res.type('text/plain').send(content)
 })
 
-// Get specific brief
-app.get('/api/clients/:companyId/launches/:productId/brief/:filename', (req, res) => {
-  const filePath = path.join(CLIENTS_DIR, req.params.companyId, 'launches', req.params.productId, 'briefs', req.params.filename)
+// Get specific brief by timestamp and file type
+app.get('/api/clients/:companyId/launches/:productId/brief/:timestamp/:fileType', (req, res) => {
+  const fileMap = { edited: 'brief_edited.md', original: 'brief.md', notes: 'editor_notes.md' }
+  const fileName = fileMap[req.params.fileType]
+  if (!fileName) return res.status(400).send('Invalid file type. Use: edited, original, or notes')
+  const filePath = path.join(CLIENTS_DIR, req.params.companyId, 'launches', req.params.productId, 'briefs', req.params.timestamp, fileName)
   if (!fileExists(filePath)) return res.status(404).send('Brief not found')
   const content = fs.readFileSync(filePath, 'utf-8')
   res.type('text/plain').send(content)

@@ -71,10 +71,18 @@ export function getLatestBrief(companyId: string, productId: string): Promise<st
   return fetchText(`/clients/${companyId}/launches/${productId}/brief/latest`)
 }
 
-export function listBriefs(companyId: string, productId: string): Promise<{ filename: string; date: string }[]> {
+export interface BriefRun {
+  timestamp: string
+  date: string
+  hasOriginal: boolean
+  hasEdited: boolean
+  hasNotes: boolean
+}
+
+export function listBriefs(companyId: string, productId: string): Promise<BriefRun[]> {
   return fetchJson(`/clients/${companyId}/launches/${productId}/briefs`)
 }
 
-export function getBrief(companyId: string, productId: string, filename: string): Promise<string> {
-  return fetchText(`/clients/${companyId}/launches/${productId}/brief/${filename}`)
+export function getBrief(companyId: string, productId: string, timestamp: string, fileType: 'edited' | 'original' | 'notes'): Promise<string> {
+  return fetchText(`/clients/${companyId}/launches/${productId}/brief/${timestamp}/${fileType}`)
 }

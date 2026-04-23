@@ -1,6 +1,6 @@
 import { useState, useEffect, useLayoutEffect, useRef, useCallback } from 'react'
 import { useParams } from 'react-router-dom'
-import { getLatestBrief, listBriefs } from '../api/client'
+import { getLatestBrief, listBriefs, getBrief, type BriefRun } from '../api/client'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 
@@ -387,9 +387,12 @@ function SectionBlock({
 export default function BriefReview() {
   const { companyId, productId } = useParams<{ companyId: string; productId: string }>()
   const [briefContent, setBriefContent] = useState('')
-  const [briefs, setBriefs] = useState<{ filename: string; date: string }[]>([])
+  const [briefs, setBriefs] = useState<BriefRun[]>([])
   const [loading, setLoading] = useState(true)
-  const [selectedBrief, setSelectedBrief] = useState<string | null>(null)
+  const [selectedTimestamp, setSelectedTimestamp] = useState<string | null>(null)
+  const [viewMode, setViewMode] = useState<'edited' | 'original'>('edited')
+  const [editorNotes, setEditorNotes] = useState<string | null>(null)
+  const [notesExpanded, setNotesExpanded] = useState(false)
 
   // Comments state
   const [sectionComments, setSectionComments] = useState<SectionComment[]>([])
@@ -411,17 +414,38 @@ export default function BriefReview() {
     setTimeout(() => setActiveCommentId(null), 1500)
   }
 
+  // Load a specific brief run's content based on timestamp and view mode
+  const loadBriefContent = useCallback((ts: string, mode: 'edited' | 'original', briefsList: BriefRun[]) => {
+    if (!companyId || !productId) return
+    const run = briefsList.find(b => b.timestamp === ts)
+    if (!run) return
+
+    // For edited view: prefer edited, fall back to original
+    // For original view: always load original
+    const fileType = mode === 'edited'
+      ? (run.hasEdited ? 'edited' : 'original')
+      : 'original'
+
+    getBrief(companyId, productId, ts, fileType).then(setBriefContent)
+
+    // Load editor notes if available
+    if (run.hasNotes) {
+      getBrief(companyId, productId, ts, 'notes').then(setEditorNotes)
+    } else {
+      setEditorNotes(null)
+    }
+  }, [companyId, productId])
+
   useEffect(() => {
     if (!companyId || !productId) return
-    Promise.all([
-      getLatestBrief(companyId, productId),
-      listBriefs(companyId, productId),
-    ]).then(([content, list]) => {
-      setBriefContent(content)
+    listBriefs(companyId, productId).then((list) => {
       setBriefs(list)
-      if (list.length > 0) setSelectedBrief(list[0].filename)
+      if (list.length > 0) {
+        setSelectedTimestamp(list[0].timestamp)
+        loadBriefContent(list[0].timestamp, 'edited', list)
+      }
     }).finally(() => setLoading(false))
-  }, [companyId, productId])
+  }, [companyId, productId, loadBriefContent])
 
   const sections = parseSections(briefContent)
   const totalComments = sectionComments.length + inlineComments.length + (generalComment.trim() ? 1 : 0)
@@ -482,32 +506,56 @@ export default function BriefReview() {
             Review, comment, and approve the journalist brief
           </p>
         </div>
-        <div className="flex gap-3">
+        <div className="flex gap-3 items-center">
           {briefs.length > 1 && (
             <select
-              value={selectedBrief || ''}
+              value={selectedTimestamp || ''}
               onChange={(e) => {
-                setSelectedBrief(e.target.value)
-                if (companyId && productId) {
-                  import('../api/client').then(({ getBrief }) =>
-                    getBrief(companyId, productId, e.target.value).then(setBriefContent)
-                  )
-                }
+                const ts = e.target.value
+                setSelectedTimestamp(ts)
+                setViewMode('edited')
+                loadBriefContent(ts, 'edited', briefs)
               }}
               className="input-field w-auto text-sm"
             >
               {briefs.map((b) => (
-                <option key={b.filename} value={b.filename}>{b.date}</option>
+                <option key={b.timestamp} value={b.timestamp}>{b.date}</option>
               ))}
             </select>
           )}
-          <button className="btn-secondary">Regenerate Brief</button>
-          <button className="btn-primary">Approve Brief</button>
+          {/* View toggle: Edited / Original */}
+          {selectedTimestamp && (() => {
+            const run = briefs.find(b => b.timestamp === selectedTimestamp)
+            return run?.hasOriginal && run?.hasEdited ? (
+              <div className="flex rounded-lg border border-cream-200 overflow-hidden text-sm">
+                <button
+                  className={`px-3 py-1.5 transition-colors ${viewMode === 'edited' ? 'bg-accent text-white' : 'bg-white text-ink-muted hover:bg-cream-50'}`}
+                  onClick={() => {
+                    setViewMode('edited')
+                    loadBriefContent(selectedTimestamp, 'edited', briefs)
+                  }}
+                >
+                  Edited
+                </button>
+                <button
+                  className={`px-3 py-1.5 transition-colors ${viewMode === 'original' ? 'bg-accent text-white' : 'bg-white text-ink-muted hover:bg-cream-50'}`}
+                  onClick={() => {
+                    setViewMode('original')
+                    loadBriefContent(selectedTimestamp, 'original', briefs)
+                  }}
+                >
+                  Original
+                </button>
+              </div>
+            ) : null
+          })()}
+          <button className="btn-secondary text-sm px-3 py-1.5">Regenerate Brief</button>
+          <button className="btn-primary text-sm px-3 py-1.5">Approve Brief</button>
         </div>
       </div>
 
       {/* Inline comment input modal */}
-      {showInlineInput && (
+      {viewMode === 'edited' && showInlineInput && (
         <div className="fixed inset-0 bg-black/20 flex items-center justify-center z-50" onClick={cancelInlineComment}>
           <div className="bg-white rounded-xl shadow-xl p-6 w-[500px] max-w-[90vw]" onClick={(e) => e.stopPropagation()}>
             <h3 className="font-serif text-lg text-ink mb-2">Comment on selected text</h3>
@@ -529,177 +577,236 @@ export default function BriefReview() {
         </div>
       )}
 
-      {/* General comment input — above the brief */}
-      <div className="mb-6">
-        {!showGeneralInput && !generalComment.trim() ? (
+      {/* Editor Notes accordion */}
+      {editorNotes && (
+        <div className="mb-6">
           <button
-            onClick={() => setShowGeneralInput(true)}
-            className="btn-ghost text-sm text-ink-muted border border-dashed border-cream-300 w-full py-3"
+            onClick={() => setNotesExpanded(!notesExpanded)}
+            className="flex items-center gap-2 text-sm font-medium text-ink-muted hover:text-ink transition-colors w-full text-left"
           >
-            + Add a general comment on the entire brief
+            <svg
+              width="12"
+              height="12"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              className={`transition-transform ${notesExpanded ? 'rotate-90' : ''}`}
+            >
+              <path d="M9 18l6-6-6-6" />
+            </svg>
+            Editor Notes
           </button>
-        ) : (
-          <div className="card">
-            <div className="flex items-center justify-between mb-2">
-              <h4 className="text-xs font-medium text-ink-muted uppercase tracking-wider">General Comment</h4>
-              {generalComment.trim() && !showGeneralInput && (
-                <button className="text-xs text-accent" onClick={() => setShowGeneralInput(true)}>Edit</button>
+          {notesExpanded && (
+            <div className="mt-2 card bg-cream-50 border-cream-200">
+              <div dir="rtl" className="prose prose-sm max-w-none text-ink-light
+                [&_p]:mb-2 [&_p]:leading-relaxed
+                [&_h1]:text-lg [&_h1]:font-serif [&_h1]:text-ink [&_h1]:mb-2
+                [&_h2]:text-base [&_h2]:font-serif [&_h2]:text-ink [&_h2]:mb-2
+                [&_h3]:text-sm [&_h3]:font-serif [&_h3]:text-ink [&_h3]:mb-1
+                [&_ul]:mb-2 [&_ol]:mb-2 [&_li]:mb-1
+                [&_strong]:text-ink [&_strong]:font-semibold
+              ">
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                  {editorNotes}
+                </ReactMarkdown>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* General comment input — above the brief (hidden in original view) */}
+      {viewMode === 'edited' && (
+        <div className="mb-6">
+          {!showGeneralInput && !generalComment.trim() ? (
+            <button
+              onClick={() => setShowGeneralInput(true)}
+              className="btn-ghost text-sm text-ink-muted border border-dashed border-cream-300 w-full py-3"
+            >
+              + Add a general comment on the entire brief
+            </button>
+          ) : (
+            <div className="card">
+              <div className="flex items-center justify-between mb-2">
+                <h4 className="text-xs font-medium text-ink-muted uppercase tracking-wider">General Comment</h4>
+                {generalComment.trim() && !showGeneralInput && (
+                  <button className="text-xs text-accent" onClick={() => setShowGeneralInput(true)}>Edit</button>
+                )}
+              </div>
+              {showGeneralInput ? (
+                <>
+                  <textarea
+                    value={generalComment}
+                    onChange={(e) => setGeneralComment(e.target.value)}
+                    placeholder="Overall feedback — tone, structure, direction..."
+                    className="input-field min-h-[80px] resize-y text-sm"
+                    autoFocus
+                  />
+                  <div className="flex gap-2 mt-2">
+                    <button className="btn-primary text-xs px-3 py-1" onClick={() => setShowGeneralInput(false)}>
+                      Save
+                    </button>
+                    <button className="btn-ghost text-xs px-3 py-1" onClick={() => { setGeneralComment(''); setShowGeneralInput(false) }}>
+                      Remove
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <p className="text-sm text-ink-light cursor-pointer" onClick={() => setShowGeneralInput(true)}>
+                  {generalComment}
+                </p>
               )}
             </div>
-            {showGeneralInput ? (
-              <>
-                <textarea
-                  value={generalComment}
-                  onChange={(e) => setGeneralComment(e.target.value)}
-                  placeholder="Overall feedback — tone, structure, direction..."
-                  className="input-field min-h-[80px] resize-y text-sm"
-                  autoFocus
-                />
-                <div className="flex gap-2 mt-2">
-                  <button className="btn-primary text-xs px-3 py-1" onClick={() => setShowGeneralInput(false)}>
-                    Save
-                  </button>
-                  <button className="btn-ghost text-xs px-3 py-1" onClick={() => { setGeneralComment(''); setShowGeneralInput(false) }}>
-                    Remove
-                  </button>
-                </div>
-              </>
-            ) : (
-              <p className="text-sm text-ink-light cursor-pointer" onClick={() => setShowGeneralInput(true)}>
-                {generalComment}
-              </p>
-            )}
-          </div>
-        )}
-      </div>
-
-      <div className="grid grid-cols-[1fr_320px] gap-8">
-        {/* Brief content */}
-        <div className={`card pl-8 pr-16 py-8 transition-all ${
-          generalComment.trim() ? 'ring-2 ring-accent/20 border-accent/30' : ''
-        }`}>
-          {sections.map((section) => (
-            <SectionBlock
-              key={section.id}
-              section={section}
-              sectionComment={sectionComments.find((c) => c.sectionId === section.id)}
-              onAddComment={handleAddSectionComment}
-              inlineComments={inlineComments.filter((ic) => ic.sectionId === section.id)}
-              onAddInlineComment={handleAddInlineComment}
-              onClickHighlight={flashComment}
-              pendingHighlight={showInlineInput}
-            />
-          ))}
+          )}
         </div>
+      )}
 
-        {/* Comments stack panel */}
-        <div className="space-y-4">
-          <div className="sticky top-8">
-            <h3 className="font-serif text-lg text-ink mb-4">
-              Comments
-              {totalComments > 0 && (
-                <span className="text-sm font-sans text-ink-muted ml-1">({totalComments})</span>
-              )}
-            </h3>
+      {viewMode === 'original' ? (
+        /* Original view — read-only, no comments, full width */
+        <div className="card pl-8 pr-16 py-8">
+          <div dir="rtl" className="max-w-none text-ink-light text-base leading-relaxed
+            [&_p]:mb-4 [&_p]:leading-relaxed
+            [&_strong]:text-ink [&_strong]:font-semibold
+            [&_a]:text-accent [&_a]:no-underline hover:[&_a]:underline
+            [&_h1]:font-serif [&_h1]:text-4xl [&_h1]:font-bold [&_h1]:text-ink [&_h1]:mb-2 [&_h1]:leading-snug
+            [&_h2]:font-serif [&_h2]:text-2xl [&_h2]:font-bold [&_h2]:text-ink [&_h2]:mb-2 [&_h2]:border-b [&_h2]:border-cream-200 [&_h2]:pb-2 [&_h2]:mt-6
+          ">
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>
+              {briefContent}
+            </ReactMarkdown>
+          </div>
+        </div>
+      ) : (
+        /* Edited view — full comment system */
+        <div className="grid grid-cols-[1fr_320px] gap-8">
+          {/* Brief content */}
+          <div className={`card pl-8 pr-16 py-8 transition-all ${
+            generalComment.trim() ? 'ring-2 ring-accent/20 border-accent/30' : ''
+          }`}>
+            {sections.map((section) => (
+              <SectionBlock
+                key={section.id}
+                section={section}
+                sectionComment={sectionComments.find((c) => c.sectionId === section.id)}
+                onAddComment={handleAddSectionComment}
+                inlineComments={inlineComments.filter((ic) => ic.sectionId === section.id)}
+                onAddInlineComment={handleAddInlineComment}
+                onClickHighlight={flashComment}
+                pendingHighlight={showInlineInput}
+              />
+            ))}
+          </div>
 
-            {totalComments === 0 ? (
-              <div className="card text-center py-8">
-                <p className="text-sm text-ink-muted">No comments yet.</p>
-                <p className="text-xs text-ink-muted mt-1">
-                  Hover over a section to add a comment,
-                  or select text for an inline comment.
-                </p>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {/* General comment — always first */}
-                {generalComment.trim() && (
-                  <div className="card border-accent/30 bg-accent/5">
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-xs font-medium text-accent uppercase tracking-wider">General</span>
-                      <button className="text-xs text-ink-muted hover:text-red-500" onClick={() => setGeneralComment('')}>
-                        Remove
-                      </button>
-                    </div>
-                    <p className="text-sm text-ink-light">{generalComment}</p>
-                  </div>
+          {/* Comments stack panel */}
+          <div className="space-y-4">
+            <div className="sticky top-8">
+              <h3 className="font-serif text-lg text-ink mb-4">
+                Comments
+                {totalComments > 0 && (
+                  <span className="text-sm font-sans text-ink-muted ml-1">({totalComments})</span>
                 )}
+              </h3>
 
-                {/* Section comments — in brief order, each with its inline comments nested */}
-                {commentTree.map(({ section, sectionComment: sc, inlineComments: ics }) => (
-                  <div key={section.id} className="card">
-                    {/* Section header */}
-                    <div className="text-xs font-medium text-accent mb-2">{section.title}</div>
-
-                    {/* Section-level comment */}
-                    {sc && (
-                      <div className="bg-cream-50 rounded-lg px-3 py-2 mb-2">
-                        <div className="flex items-center justify-between">
-                          <span className="text-xs text-ink-muted">Section comment</span>
-                          <button
-                            className="text-xs text-ink-muted hover:text-red-500"
-                            onClick={() => setSectionComments(sectionComments.filter((c) => c.sectionId !== section.id))}
-                          >
-                            Remove
-                          </button>
-                        </div>
-                        <p className="text-sm text-ink-light mt-1">{sc.text}</p>
+              {totalComments === 0 ? (
+                <div className="card text-center py-8">
+                  <p className="text-sm text-ink-muted">No comments yet.</p>
+                  <p className="text-xs text-ink-muted mt-1">
+                    Hover over a section to add a comment,
+                    or select text for an inline comment.
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {/* General comment — always first */}
+                  {generalComment.trim() && (
+                    <div className="card border-accent/30 bg-accent/5">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-xs font-medium text-accent uppercase tracking-wider">General</span>
+                        <button className="text-xs text-ink-muted hover:text-red-500" onClick={() => setGeneralComment('')}>
+                          Remove
+                        </button>
                       </div>
-                    )}
+                      <p className="text-sm text-ink-light">{generalComment}</p>
+                    </div>
+                  )}
 
-                    {/* Inline comments under this section */}
-                    {ics.length > 0 && (
-                      <div className="space-y-2">
-                        {ics.map((ic) => (
-                          <div
-                            key={ic.id}
-                            id={`comment-${ic.id}`}
-                            className={`rounded-lg px-3 py-2 border transition-all duration-500 ${
-                              activeCommentId === ic.id
-                                ? 'bg-yellow-100 border-yellow-300 shadow-md scale-[1.02]'
-                                : 'bg-yellow-50/50 border-yellow-100'
-                            }`}
-                          >
-                            <div className="flex items-center justify-between">
-                              <span dir="auto" className="text-xs text-ink-muted italic truncate max-w-[200px]">
-                                &ldquo;{ic.selectedText.slice(0, 40)}{ic.selectedText.length > 40 ? '...' : ''}&rdquo;
-                              </span>
-                              <button
-                                className="text-xs text-ink-muted hover:text-red-500 flex-shrink-0 ml-2"
-                                onClick={() => setInlineComments(inlineComments.filter((c) => c.id !== ic.id))}
-                              >
-                                Remove
-                              </button>
-                            </div>
-                            <p className="text-sm text-ink-light mt-1">{ic.text}</p>
+                  {/* Section comments — in brief order, each with its inline comments nested */}
+                  {commentTree.map(({ section, sectionComment: sc, inlineComments: ics }) => (
+                    <div key={section.id} className="card">
+                      {/* Section header */}
+                      <div className="text-xs font-medium text-accent mb-2">{section.title}</div>
+
+                      {/* Section-level comment */}
+                      {sc && (
+                        <div className="bg-cream-50 rounded-lg px-3 py-2 mb-2">
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs text-ink-muted">Section comment</span>
+                            <button
+                              className="text-xs text-ink-muted hover:text-red-500"
+                              onClick={() => setSectionComments(sectionComments.filter((c) => c.sectionId !== section.id))}
+                            >
+                              Remove
+                            </button>
                           </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
+                          <p className="text-sm text-ink-light mt-1">{sc.text}</p>
+                        </div>
+                      )}
 
-            {/* Submit button */}
-            {totalComments > 0 && (
-              <button
-                className="btn-primary w-full mt-4"
-                onClick={() => {
-                  alert(
-                    `Submitting ${totalComments} comments for regeneration.\n\n` +
-                    `General: ${generalComment.trim() ? 'Yes' : 'No'}\n` +
-                    `Section comments: ${sectionComments.length}\n` +
-                    `Inline comments: ${inlineComments.length}`
-                  )
-                }}
-              >
-                Submit & Regenerate ({totalComments})
-              </button>
-            )}
+                      {/* Inline comments under this section */}
+                      {ics.length > 0 && (
+                        <div className="space-y-2">
+                          {ics.map((ic) => (
+                            <div
+                              key={ic.id}
+                              id={`comment-${ic.id}`}
+                              className={`rounded-lg px-3 py-2 border transition-all duration-500 ${
+                                activeCommentId === ic.id
+                                  ? 'bg-yellow-100 border-yellow-300 shadow-md scale-[1.02]'
+                                  : 'bg-yellow-50/50 border-yellow-100'
+                              }`}
+                            >
+                              <div className="flex items-center justify-between">
+                                <span dir="auto" className="text-xs text-ink-muted italic truncate max-w-[200px]">
+                                  &ldquo;{ic.selectedText.slice(0, 40)}{ic.selectedText.length > 40 ? '...' : ''}&rdquo;
+                                </span>
+                                <button
+                                  className="text-xs text-ink-muted hover:text-red-500 flex-shrink-0 ml-2"
+                                  onClick={() => setInlineComments(inlineComments.filter((c) => c.id !== ic.id))}
+                                >
+                                  Remove
+                                </button>
+                              </div>
+                              <p className="text-sm text-ink-light mt-1">{ic.text}</p>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Submit button */}
+              {totalComments > 0 && (
+                <button
+                  className="btn-primary w-full mt-4"
+                  onClick={() => {
+                    alert(
+                      `Submitting ${totalComments} comments for regeneration.\n\n` +
+                      `General: ${generalComment.trim() ? 'Yes' : 'No'}\n` +
+                      `Section comments: ${sectionComments.length}\n` +
+                      `Inline comments: ${inlineComments.length}`
+                    )
+                  }}
+                >
+                  Submit & Regenerate ({totalComments})
+                </button>
+              )}
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   )
 }

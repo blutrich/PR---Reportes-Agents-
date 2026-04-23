@@ -578,7 +578,7 @@ or a call to action from `must_include` (e.g., a free discovery call).
 2. The document must read as one cohesive piece — transitions between
    sections should feel natural, not mechanical.
 3. Total length: 600–800 words.
-4. Save to: `clients/{{company_id}}/launches/{{product_id}}/briefs/brief_final_{{timestamp}}.md`
+4. Save to: `clients/{{company_id}}/launches/{{product_id}}/briefs/{{timestamp}}/brief.md`
    The `briefs/` folder is created by the Orchestrator in Step 0A.
    `{{timestamp}}` is provided by the Orchestrator — do not generate it yourself.
 5. After saving, output nothing else — no explanations, no commentary,

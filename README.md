@@ -556,9 +556,10 @@ INPUT: /new-launch {company_id} {product_id}
 │   └── Researcher C (thesis C + queries from context_strategy.json)
 │
 ├── STEP 7 — Wave Validator Agent → validated_waves.json
-├── STEP 8 — Brief Writer Agent → briefs/brief_final_*.md
+├── STEP 8 — Brief Writer Agent → briefs/{timestamp}/brief.md
+├── STEP 9 — Brief Editor Agent → briefs/{timestamp}/brief_edited.md + editor_notes.md
 │
-OUTPUT: briefs/brief_final_DD-MM-YYYY_HH-mm-ss.md
+OUTPUT: briefs/DD-MM-YYYY_HH-mm-ss/brief_edited.md
 ```
 
 ---
@@ -1438,8 +1439,8 @@ All sections receive `writing_guidance` (forbidden_words, tone_rules, framing_ru
 
 #### Output
 
-**File:** `brief_final_DD-MM-YYYY_HH-mm-ss.md`
-**Saved to:** `clients/{company_id}/launches/{product_id}/briefs/brief_final_DD-MM-YYYY_HH-mm-ss.md`
+**File:** `brief.md`
+**Saved to:** `clients/{company_id}/launches/{product_id}/briefs/{timestamp}/brief.md`
 The `briefs/` folder is created by the Orchestrator in Step 0A.
 The timestamp is the current date and time when the brief is generated.
 **Format:** Markdown. The headline is the `#` heading with the subheadline
@@ -1471,6 +1472,213 @@ long enough to make the case completely.
 
 ---
 
+### AGENT 7 — Brief Editor
+
+**File:** `.claude/agents/brief-editor.md`
+**Runs:** After the Brief Writer (Step 8) completes. This is Step 9.
+**Tools:** None — pure editing. No web access, no search, no new content.
+
+**Prompt law:** No company names, product names, industry terms, or
+client-specific language. All specifics enter via variables at runtime.
+
+**Job:** Copy-edit the finished brief so that every sentence reads as if a
+senior native-language journalist wrote it — natural, sharp, and immediately
+understandable by anyone. A person with no background in the industry should
+read this brief and understand every sentence on the first pass.
+
+This agent is the final quality gate. It catches what the Brief Writer
+misses at the sentence level: unnatural phrasing, awkward prepositions,
+sentences that land at "good" instead of "great," ideas that deserve a
+stronger ending, and language that sounds translated rather than native.
+
+**Why a separate agent:** The Brief Writer juggles structure, wave
+integration, writing guidance, term substitutions, section constraints, and
+narrative arc. Asking it to also be a world-class copy editor is asking one
+agent to do two cognitive jobs. The editor works on the finished artifact
+with one focus: make every sentence land.
+
+**The dual lens — Senior Copy Editor × Persuasion Craft:**
+
+This is not a conventional copy editor. It operates with two simultaneous
+lenses:
+
+**Lens 1 — Senior Copy Editor:**
+The classic editorial eye. Grammar, syntax, preposition accuracy, sentence
+completeness, natural word order in the target language. Every sentence
+must read as if written by a native speaker for a mainstream newspaper —
+no translated phrasing, no literary constructions that require re-reading,
+no incomplete thoughts.
+
+**The everyday language rule is paramount:** The brief must be readable by
+a common person — not just by journalists or industry professionals. No
+sophisticated vocabulary, no jargon, no phrases that assume background
+knowledge. If a word has a simpler synonym that carries the same meaning —
+use the simpler one. The test: would a person reading a free daily newspaper
+on the bus understand this sentence without pausing? If not — simplify.
+
+**Lens 2 — Persuasion Craft (inspired by Alex Hormozi's writing principles):**
+The brief is not just journalism — it must make a journalist want to write
+this story. The editor applies specific persuasion techniques at the
+sentence level — through *structure*, not through sophisticated vocabulary:
+
+- **Sentence rhythm:** Vary sentence length deliberately. Two short
+  punchy sentences followed by a longer explanatory one creates momentum.
+  Monotonous sentence length kills reader energy.
+- **Contrast and antithesis:** Pair the obvious with the non-obvious.
+  "Everyone knows X. Almost no one realizes Y." The familiar-to-surprising
+  arc makes insights feel earned, not asserted. Use simple words to
+  create the contrast — the power comes from the structure, not the
+  vocabulary.
+- **Specificity over abstraction:** Vague claims get ignored; specific
+  claims get believed. If a sentence uses abstract language where a
+  concrete detail exists in the brief's data — tighten it.
+- **Sentence endings:** The last word of a sentence carries disproportionate
+  weight. If a sentence ends on a functional word (preposition, connector)
+  or a weak word when a stronger alternative exists — restructure so it
+  lands on the word that hits hardest.
+- **Damaging admissions:** Where the spokesperson quote or product section
+  acknowledges a hard truth, lean into it — don't soften it. Honesty is
+  more persuasive than polish.
+- **"Why now" sharpening:** Every sentence in the zeitgeist should make
+  the reader feel the urgency is real and immediate, not theoretical.
+  Tighten any sentence that reads as a general observation into one that
+  reads as a current pressure.
+
+**What the Persuasion Lens does NOT do:**
+- No sales pressure tactics (fear of missing out, urgency tricks, "act now"
+  language) — journalists detect and reject these instantly
+- No unbundling/merism (listing every sub-component) — this creates bloat
+  in a 600–800 word brief
+- No objection handling — the brief informs, it does not close a sale
+- No hype language ("revolutionary," "game-changing," "unprecedented")
+- No elevated vocabulary — persuasion comes from sentence structure and
+  rhythm, never from fancy words. Every word must be plain and everyday.
+
+The persuasion lens makes sentences *land harder* — it does not turn
+journalism into marketing, and it does not make language more sophisticated.
+
+---
+
+**The Content Boundary — Absolute:**
+
+The editor may reshape language. It may NOT reshape meaning.
+
+Specifically:
+- **May change:** word choice (toward simpler alternatives), sentence
+  structure, word order, prepositions, punctuation, rhythm, sentence
+  endings, paragraph transitions
+- **May NOT change:** facts, statistics, names, URLs, citations, quotes
+  (key_quote is verbatim), section order, which ideas appear in which
+  section, the overall argument or narrative arc
+- **May NOT add:** new ideas, new claims, new evidence, new sections
+- **May NOT remove:** ideas, evidence, citations, or data points — only
+  rephrase how they are expressed
+- The `key_quote` in the user story section is verbatim and must not be
+  touched in any way
+
+If a sentence has a content problem (wrong fact, missing citation, weak
+evidence), the editor flags it in the editor notes — it does not fix
+content problems by rewriting.
+
+---
+
+**Input:**
+
+- `{{brief_text}}` — The complete brief output from the Brief Writer
+- `{{writing_guidance}}` — The full writing_guidance object (forbidden words,
+  tone rules, framing rules, must_include, to_emphasize, term_substitutions,
+  identity_vocabulary). The editor enforces these with the same rigor as
+  the Brief Writer — this is a second pass, not a relaxed one.
+- `{{content_language}}` — The language of the brief (e.g., "Hebrew",
+  "English"). Tells the editor which language's grammar, idioms, and
+  natural phrasing to optimize for.
+- `{{company_name}}` — Needed to verify the thin line rule in the zeitgeist
+- `{{launched_product_name}}` — Needed to verify the thin line rule in
+  the zeitgeist
+
+---
+
+**Editing Passes:**
+
+The editor works in three sequential passes on the same document:
+
+**Pass 1 — Language correctness:**
+- Fix grammar errors, missing or incorrect prepositions (e.g., "את" in Hebrew)
+- Fix unnatural word order
+- Fix sentences that sound translated from another language
+- Fix incomplete sentences or thoughts that trail off
+- Replace sophisticated or uncommon words with simpler everyday alternatives
+- Ensure every sentence is understandable on first read by a non-expert
+
+**Pass 2 — Sentence craft (persuasion lens):**
+- Apply sentence rhythm variation (short-short-long pattern where it
+  improves flow)
+- Strengthen sentence endings — restructure so the last word carries weight
+- Sharpen contrast and antithesis where the idea already exists but the
+  structure doesn't deliver it
+- Tighten abstract language into specific language where the data supports it
+- Ensure the zeitgeist builds urgency, not just describes a situation
+- All improvements must use plain, everyday vocabulary — never elevate
+  the language level
+
+**Pass 3 — Constraint verification:**
+- No `global_forbidden_words` in the output
+- No `instead_of` terms from `term_substitutions` in the output
+- `identity_vocabulary` adjective rules respected
+- Thin line intact: zeitgeist does not mention `{{launched_product_name}}`
+  or `{{company_name}}`
+- `key_quote` still appears verbatim
+- Brief length still within 600–800 words
+- All citations and URLs intact
+
+---
+
+**Output:**
+
+Two outputs, always:
+
+1. **The edited brief** — saved to the same `briefs/` folder with a
+   distinct filename:
+   `brief_edited.md`
+   **Saved to:** `clients/{company_id}/launches/{product_id}/briefs/{timestamp}/brief_edited.md`
+   Lives in the same timestamp subfolder as the original brief.
+
+2. **Editor notes** — always created alongside the edited brief. Saved as:
+   `clients/{company_id}/launches/{product_id}/briefs/{timestamp}/editor_notes.md`
+
+   Contains two sections:
+
+   **## Changes Made**
+   A numbered list of every change the editor made. Each entry states:
+   - The section where the change was made
+   - What the original text was (quoted)
+   - What it was changed to (quoted)
+   - Why — which lens triggered this change (language correctness,
+     sentence craft, or constraint verification) and a brief explanation
+
+   **## Content Flags** (only if applicable)
+   Issues the editor found but cannot fix because they are content-level
+   problems: wrong facts, missing citations, weak evidence, structural
+   concerns. Each flag describes: what the issue is, where it is (section
+   + sentence), and why the editor flagged it. If no content issues were
+   found, this section contains "No content issues found."
+
+---
+
+**What this agent does NOT do:**
+
+- Does not change the meaning of any sentence
+- Does not add or remove ideas, evidence, or sections
+- Does not touch the `key_quote` — it is verbatim from a real person
+- Does not override `writing_guidance` constraints
+- Does not search the web or add new information
+- Does not receive product_profile.json, validated_waves.json, or any
+  upstream data — it works only from the finished brief text
+- Does not make strategic or editorial decisions — those were made upstream
+- Does not elevate vocabulary — only simplifies it
+
+---
+
 ## File Structure
 
 ```
@@ -1487,7 +1695,8 @@ project-root/
 │   │   ├── context-strategist.md
 │   │   ├── researcher.md          ← one prompt, called 3× with different inputs
 │   │   ├── wave-validator.md
-│   │   └── brief-writer.md
+│   │   ├── brief-writer.md
+│   │   └── brief-editor.md
 │   │
 │   └── commands/
 │       ├── new-client.md
@@ -1516,7 +1725,10 @@ project-root/
 │               │   ├── validated_waves.json       ← Layer C
 │               │   └── user_stories.json          ← structured by User Story Parser
 │               ├── briefs/
-│               │   └── brief_final_DD-MM-YYYY_HH-mm-ss.md  ← final deliverable (timestamped)
+│               │   └── DD-MM-YYYY_HH-mm-ss/
+│               │       ├── brief.md                         ← raw brief from Brief Writer
+│               │       ├── brief_edited.md                  ← edited brief from Brief Editor (final deliverable)
+│               │       └── editor_notes.md                  ← changelog + content flags
 │
 └── schemas/
     ├── company_profile.schema.json
@@ -1546,7 +1758,7 @@ if none exists, the Orchestrator tells the client to run `/new-client` first.
 Reads input files from `clients/{company_id}/launches/{product_id}/input/`.
 First run creates four template files in the `input/` folder and stops.
 Second run executes the full pipeline.
-Output: `briefs/brief_final_DD-MM-YYYY_HH-mm-ss.md` + all intermediates saved.
+Output: `briefs/{timestamp}/brief_edited.md` + all intermediates saved.
 
 ---
 

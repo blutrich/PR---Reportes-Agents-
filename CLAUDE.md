@@ -756,8 +756,14 @@ Before calling the agent, run this shell command to get the current time:
 ```
 date +"%d-%m-%Y_%H-%M-%S"
 ```
-Store the result as `timestamp`. Pass it to the agent so it uses the real
-time in the filename. Do not let the agent generate its own timestamp.
+Store the result as `timestamp`. Do not let the agent generate its own timestamp.
+
+### Create the brief subfolder
+
+Create the subfolder for this run:
+`clients/{company_id}/launches/{product_id}/briefs/{timestamp}/`
+
+This folder will hold the brief, the edited brief, and the editor notes.
 
 ### Delegate to sub-agent: `brief-writer`
 
@@ -797,7 +803,7 @@ Never pass variable placeholder names. Always pass the actual values.
 After the Brief Writer returns, check:
 
 1. The output file was saved to:
-   `clients/{company_id}/launches/{product_id}/briefs/brief_final_{timestamp}.md`
+   `clients/{company_id}/launches/{product_id}/briefs/{timestamp}/brief.md`
 
 2. No `writing_guidance.global_forbidden_words` appear in the brief text
 
@@ -806,12 +812,80 @@ After the Brief Writer returns, check:
    violation
 
 If all checks pass:
-  Tell the client: "Brief complete. Saved to:
-  `clients/{company_id}/launches/{product_id}/briefs/brief_final_{timestamp}.md`"
+  Tell the client: "Raw brief complete. Moving to Brief Editor."
+  Move to Step 9.
 
 If any forbidden word is found:
   Tell the client which words were found and in which section.
   Ask: "Remove these and regenerate, or keep as-is?"
+  If the client says keep as-is — move to Step 9 anyway.
+
+---
+
+## STEP 9 — Brief Editor
+
+This is the final step in the pipeline. The Brief Editor copy-edits the
+finished brief so that every sentence reads naturally and lands with impact.
+
+### Assemble Brief Editor Input
+
+The Brief Editor receives a minimal, focused set of inputs. It works from
+the finished brief text — it does not receive any upstream data files.
+
+**Read the brief:**
+Read the file saved in Step 8:
+`clients/{company_id}/launches/{product_id}/briefs/{timestamp}/brief.md`
+
+**Read writing_guidance from product_profile.json:**
+Extract the full `writing_guidance` object (same one passed to the Brief Writer).
+
+**Read content_language from company_profile.json:**
+Extract `content_language` — the language the brief is written in.
+
+### Delegate to sub-agent: `brief-editor`
+
+When calling the agent, state all values in plain language at the top of
+your message to the agent:
+
+"brief_text is: [full text of the brief]
+ writing_guidance is: [full writing_guidance object]
+ content_language is: [actual value]
+ company_name is: [actual value]
+ launched_product_name is: [actual value]
+ company_id is: [actual value]
+ product_id is: [actual value]
+ timestamp is: [same timestamp from Step 8]"
+
+Never pass variable placeholder names. Always pass the actual values.
+
+### Post-Edit Check
+
+After the Brief Editor returns, check:
+
+1. The edited brief was saved to:
+   `clients/{company_id}/launches/{product_id}/briefs/{timestamp}/brief_edited.md`
+
+2. The editor notes were saved to:
+   `clients/{company_id}/launches/{product_id}/briefs/{timestamp}/editor_notes.md`
+
+3. No `writing_guidance.global_forbidden_words` appear in the edited brief
+
+4. The zeitgeist paragraph does not mention `launched_product_name` or
+   `company_name` — if it does, report this to the client as a thin-line
+   violation
+
+5. The `key_quote` (if a user story section exists) appears verbatim and
+   unmodified in the edited brief
+
+If all checks pass:
+  Tell the client: "Edited brief complete. Saved to:
+  `clients/{company_id}/launches/{product_id}/briefs/{timestamp}/brief_edited.md`
+
+  Editor notes: `clients/{company_id}/launches/{product_id}/briefs/{timestamp}/editor_notes.md`"
+
+If any check fails:
+  Report which check failed and what was found.
+  Ask: "Fix and re-run the editor, or keep as-is?"
 
 Pipeline complete.
 
@@ -825,7 +899,7 @@ Pipeline complete.
 - Always save every intermediate output before proceeding to the next step
 - raw_gold sentences may be rephrased for flow but their meaning and
   specificity must be preserved — never dilute or generalize
-- writing_guidance is a hard constraint for the Brief Writer
+- writing_guidance is a hard constraint for the Brief Writer and Brief Editor
 - If any agent fails: report the agent name and what input it received,
   then ask whether to retry or continue without that output
 - On re-runs: if product_profile.json exists → ask "re-extract or reuse?"
