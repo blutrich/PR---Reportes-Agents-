@@ -32,12 +32,15 @@ clients/
     ├── company_profile.json
     └── launches/
         └── {product_id}/
-            ├── launch_input.md        ← created on first run if missing
-            ├── product_input.md       ← created on first run if missing
-            ├── editorial_notes.md     ← created on first run if missing
-            ├── user_stories_input.md  ← created on first run if missing
-            ├── raw_launch_text.txt
-            └── (all other files added by agents as pipeline runs)
+            ├── input/
+            │   ├── launch_input.md        ← created on first run if missing
+            │   ├── product_input.md       ← created on first run if missing
+            │   ├── editorial_notes.md     ← created on first run if missing
+            │   └── user_stories_input.md  ← created on first run if missing
+            ├── processed/
+            │   └── (all agent outputs saved here as pipeline runs)
+            └── briefs/
+                └── (final deliverables)
 ```
 
 Rules:
@@ -65,17 +68,19 @@ to check whether the client has prepared their input files.
 
 Create the launch folder and subfolders if they do not exist:
 `clients/{company_id}/launches/{product_id}/`
+`clients/{company_id}/launches/{product_id}/input/`
+`clients/{company_id}/launches/{product_id}/processed/`
 `clients/{company_id}/launches/{product_id}/briefs/`
 
 ### Check for launch_input.md
 
-Look for: `clients/{company_id}/launches/{product_id}/launch_input.md`
+Look for: `clients/{company_id}/launches/{product_id}/input/launch_input.md`
 
 **If it does NOT exist — first run setup:**
 
-Use the Write tool to create all four template files inside the launch folder.
+Use the Write tool to create all four template files inside the `input/` folder.
 
-`clients/{company_id}/launches/{product_id}/launch_input.md`:
+`clients/{company_id}/launches/{product_id}/input/launch_input.md`:
 ```markdown
 # Launch Input
 
@@ -93,7 +98,7 @@ Use the Write tool to create all four template files inside the launch folder.
 # Everything under this heading is used as-is.
 ```
 
-`clients/{company_id}/launches/{product_id}/product_input.md`:
+`clients/{company_id}/launches/{product_id}/input/product_input.md`:
 ```markdown
 # Product Input — Authoritative Field Overrides
 # Values defined here overwrite anything the system extracts.
@@ -106,9 +111,17 @@ Use the Write tool to create all four template files inside the launch folder.
 # launched_product_target_audience: The precise population this is built for
 # launched_product_value_proposition: The concrete benefit the user receives
 # launched_product_differentiation_claim: What makes this structurally different
+#
+# --- Term Substitutions (launch-specific) ---
+# Override or add to company-level substitutions for this launch only.
+# Format: term_substitution: instead_of: X | say: Y
+# One substitution per line. Remove the # to activate.
+#
+# term_substitution: instead_of: consulting | say: advisory
+# term_substitution: instead_of: tool | say: service
 ```
 
-`clients/{company_id}/launches/{product_id}/editorial_notes.md`:
+`clients/{company_id}/launches/{product_id}/input/editorial_notes.md`:
 ```markdown
 # Editorial Notes
 # Each active line must be a complete, standalone directive.
@@ -129,7 +142,7 @@ Use the Write tool to create all four template files inside the launch folder.
 # Example: Things to avoid —
 ```
 
-`clients/{company_id}/launches/{product_id}/user_stories_input.md`:
+`clients/{company_id}/launches/{product_id}/input/user_stories_input.md`:
 ```markdown
 # User Stories — Raw Input
 # Paste raw testimonial text below. Any format is fine —
@@ -142,7 +155,7 @@ Use the Write tool to create all four template files inside the launch folder.
 Then use the Write tool to create each file, then stop and tell the client:
 
 "I've created four input files for this launch in:
-`clients/{company_id}/launches/{product_id}/`
+`clients/{company_id}/launches/{product_id}/input/`
 
 - **launch_input.md** — add your sources (URLs, Google Doc, pasted notes)
 - **product_input.md** — set any field values you want to define authoritatively
@@ -192,7 +205,7 @@ Separate each source clearly:
 ```
 
 Save to:
-`clients/{company_id}/launches/{product_id}/raw_launch_text.txt`
+`clients/{company_id}/launches/{product_id}/processed/raw_launch_text.txt`
 
 If this file already exists:
   Ask: "raw_launch_text.txt already exists. Reuse it or replace it?"
@@ -202,7 +215,7 @@ If this file already exists:
 
 ## STEP 0B — Read editorial_notes.md
 
-Read: `clients/{company_id}/launches/{product_id}/editorial_notes.md`
+Read: `clients/{company_id}/launches/{product_id}/input/editorial_notes.md`
 
 If the file does not exist — skip silently. Continue.
 
@@ -224,7 +237,7 @@ reading the structured result.
 
 ### Part 1 — Structure raw stories (if user_stories_input.md has content)
 
-Check: `clients/{company_id}/launches/{product_id}/user_stories_input.md`
+Check: `clients/{company_id}/launches/{product_id}/input/user_stories_input.md`
 
 If the file does NOT exist or contains only comments/empty lines:
   Skip silently. Move to Part 2.
@@ -240,11 +253,11 @@ If the file EXISTS and has content (non-comment lines):
 
   Wait for output.
   The agent saves:
-    `clients/{company_id}/launches/{product_id}/user_stories.json`
+    `clients/{company_id}/launches/{product_id}/processed/user_stories.json`
 
 ### Part 2 — Read structured user stories
 
-Read: `clients/{company_id}/launches/{product_id}/user_stories.json`
+Read: `clients/{company_id}/launches/{product_id}/processed/user_stories.json`
 
 If the file does not exist — skip silently. Continue.
 
@@ -296,7 +309,7 @@ State explicitly at the top of your message to the agent:
 Never pass placeholder names. Always pass actual values.
 
 Wait for output: `product_profile_raw.json`
-Save to: `clients/{company_id}/launches/{product_id}/product_profile_raw.json`
+Save to: `clients/{company_id}/launches/{product_id}/processed/product_profile_raw.json`
 
 ### 2B — Raw Gold
 
@@ -307,14 +320,14 @@ State explicitly:
 "raw_launch_text is: [full text content]"
 
 Wait for output: `raw_gold.json`
-Save to: `clients/{company_id}/launches/{product_id}/raw_gold.json`
+Save to: `clients/{company_id}/launches/{product_id}/processed/raw_gold.json`
 
 ---
 
 ### product_input.md Override Step
 
 After `product_profile_raw.json` is saved, check whether this file exists:
-`clients/{company_id}/launches/{product_id}/product_input.md`
+`clients/{company_id}/launches/{product_id}/input/product_input.md`
 
 If it does NOT exist — skip this step entirely.
 
@@ -322,7 +335,12 @@ If it EXISTS:
   Read each line.
   Skip any line starting with `#` — these are comments.
   Skip empty lines.
-  For each remaining line, parse as `field_name: value`.
+  For each remaining line:
+    - If the line starts with `term_substitution:` — parse as
+      `term_substitution: instead_of: X | say: Y` and collect into
+      `launched_product_term_substitutions[]`. These are NOT field overrides —
+      they are collected separately for the merge step (Step 3).
+    - Otherwise, parse as `field_name: value`.
 
   For each field defined:
     - Overwrite the corresponding field in `product_profile_raw.json`
@@ -391,11 +409,41 @@ From `client_strategic_additions[]` read in Step 0B:
 - `framing_rules`: keep all, deduplicate identical entries
 - `must_include`: keep all, deduplicate identical entries
 - `global_tone_rules`: carry forward from Layer A as-is
+- `term_substitutions`: combine `global_term_substitutions` from company profile
+  with any `launched_product_term_substitutions[]` from `product_input.md`.
+  If a product-level entry has the same `instead_of` value as a company-level
+  entry, the product-level entry wins (overrides the `say` value).
+  Deduplicate by `instead_of` key.
+  If both sources are empty or null — write an empty array `[]`.
+
+  **Contradiction check — run after merging:**
+  After building the merged list, check for contradictions:
+  - **Circular chains:** A `say` value in one entry is the `instead_of` in
+    another entry (e.g., "instead_of: users, say: customers" + "instead_of:
+    customers, say: clients"). This creates an unresolvable loop.
+  - **Conflicting targets:** Two entries with the same `instead_of` but
+    different `say` values that were not resolved by the override rule
+    (this should not happen if dedup ran correctly, but verify).
+
+  If any contradiction is found:
+    Stop and report to the client: "Term substitution contradiction found:
+    [describe the conflict]. Please fix in company_input.md or product_input.md
+    and run again."
+    Do not proceed.
+
+- `identity_vocabulary`: combine `brand_identity_vocabulary` from company profile
+  with `launched_product_identity_vocabulary` from `product_profile_raw.json`.
+  **Product level extends, never removes:**
+  - New terms from the product level are added to the list.
+  - If the same `term` exists in both, **append** the product-level
+    `preferred_adjectives` and `forbidden_adjectives` to the company-level
+    lists. Deduplicate each list. Never remove a company-level adjective.
+  - If both sources are empty or null — write an empty array `[]`.
 
 Produce the complete `product_profile.json` — which is
 `product_profile_raw.json` with the unified `writing_guidance` block injected.
 
-Save to: `clients/{company_id}/launches/{product_id}/product_profile.json`
+Save to: `clients/{company_id}/launches/{product_id}/processed/product_profile.json`
 
 This file is the client's control panel. They can open it, edit any field,
 and re-run downstream agents without repeating the extraction step.
@@ -441,7 +489,7 @@ Read the following fields and assemble them as the agent's input:
   - `writing_guidance`, `forbidden_words`, `tone_rules`
   - `functional_breakdown`
   - `spokesperson`, `speaking_style`
-  - `stories_for_conversion`, `product_preferred_terms`
+  - `stories_for_conversion`, `brand_identity_vocabulary`
   - `gaps[]`, `limitations[]`
   - `launched_product_name`, `launched_product_one_liner`
 
@@ -492,7 +540,7 @@ If any check fails:
     Do not proceed.
 
 If all checks pass:
-  Save to: `clients/{company_id}/launches/{product_id}/context_strategy.json`
+  Save to: `clients/{company_id}/launches/{product_id}/processed/context_strategy.json`
   Move to Step 6.
 
 ---
@@ -554,9 +602,9 @@ Never pass variable placeholder names. Always pass the actual values.
 Wait for all three agents to complete.
 
 Save outputs to:
-  - `clients/{company_id}/launches/{product_id}/wave_candidate_A.json`
-  - `clients/{company_id}/launches/{product_id}/wave_candidate_B.json`
-  - `clients/{company_id}/launches/{product_id}/wave_candidate_C.json`
+  - `clients/{company_id}/launches/{product_id}/processed/wave_candidate_A.json`
+  - `clients/{company_id}/launches/{product_id}/processed/wave_candidate_B.json`
+  - `clients/{company_id}/launches/{product_id}/processed/wave_candidate_C.json`
 
 If any researcher fails:
   Report which researcher failed and what input it received.
@@ -637,7 +685,7 @@ If no waves were approved:
   Do not proceed.
 
 If at least 1 wave was approved:
-  Save to: `clients/{company_id}/launches/{product_id}/validated_waves.json`
+  Save to: `clients/{company_id}/launches/{product_id}/processed/validated_waves.json`
   Tell the client how many waves survived and their classifications.
   Move to Step 8.
 
@@ -668,7 +716,7 @@ yourself — do not pass full files. Pass the specific fields listed below.
   - `top_level_issue`
 
   - `writing_guidance` (full: forbidden_words, global_tone_rules, framing_rules,
-    must_include, to_emphasize)
+    must_include, to_emphasize, term_substitutions, identity_vocabulary)
 
 **From `company_profile.json`:**
   - `company_name`
@@ -708,8 +756,14 @@ Before calling the agent, run this shell command to get the current time:
 ```
 date +"%d-%m-%Y_%H-%M-%S"
 ```
-Store the result as `timestamp`. Pass it to the agent so it uses the real
-time in the filename. Do not let the agent generate its own timestamp.
+Store the result as `timestamp`. Do not let the agent generate its own timestamp.
+
+### Create the brief subfolder
+
+Create the subfolder for this run:
+`clients/{company_id}/launches/{product_id}/briefs/{timestamp}/`
+
+This folder will hold the brief, the edited brief, and the editor notes.
 
 ### Delegate to sub-agent: `brief-writer`
 
@@ -749,7 +803,7 @@ Never pass variable placeholder names. Always pass the actual values.
 After the Brief Writer returns, check:
 
 1. The output file was saved to:
-   `clients/{company_id}/launches/{product_id}/briefs/brief_final_{timestamp}.md`
+   `clients/{company_id}/launches/{product_id}/briefs/{timestamp}/brief.md`
 
 2. No `writing_guidance.global_forbidden_words` appear in the brief text
 
@@ -758,12 +812,80 @@ After the Brief Writer returns, check:
    violation
 
 If all checks pass:
-  Tell the client: "Brief complete. Saved to:
-  `clients/{company_id}/launches/{product_id}/briefs/brief_final_{timestamp}.md`"
+  Tell the client: "Raw brief complete. Moving to Brief Editor."
+  Move to Step 9.
 
 If any forbidden word is found:
   Tell the client which words were found and in which section.
   Ask: "Remove these and regenerate, or keep as-is?"
+  If the client says keep as-is — move to Step 9 anyway.
+
+---
+
+## STEP 9 — Brief Editor
+
+This is the final step in the pipeline. The Brief Editor copy-edits the
+finished brief so that every sentence reads naturally and lands with impact.
+
+### Assemble Brief Editor Input
+
+The Brief Editor receives a minimal, focused set of inputs. It works from
+the finished brief text — it does not receive any upstream data files.
+
+**Read the brief:**
+Read the file saved in Step 8:
+`clients/{company_id}/launches/{product_id}/briefs/{timestamp}/brief.md`
+
+**Read writing_guidance from product_profile.json:**
+Extract the full `writing_guidance` object (same one passed to the Brief Writer).
+
+**Read content_language from company_profile.json:**
+Extract `content_language` — the language the brief is written in.
+
+### Delegate to sub-agent: `brief-editor`
+
+When calling the agent, state all values in plain language at the top of
+your message to the agent:
+
+"brief_text is: [full text of the brief]
+ writing_guidance is: [full writing_guidance object]
+ content_language is: [actual value]
+ company_name is: [actual value]
+ launched_product_name is: [actual value]
+ company_id is: [actual value]
+ product_id is: [actual value]
+ timestamp is: [same timestamp from Step 8]"
+
+Never pass variable placeholder names. Always pass the actual values.
+
+### Post-Edit Check
+
+After the Brief Editor returns, check:
+
+1. The edited brief was saved to:
+   `clients/{company_id}/launches/{product_id}/briefs/{timestamp}/brief_edited.md`
+
+2. The editor notes were saved to:
+   `clients/{company_id}/launches/{product_id}/briefs/{timestamp}/editor_notes.md`
+
+3. No `writing_guidance.global_forbidden_words` appear in the edited brief
+
+4. The zeitgeist paragraph does not mention `launched_product_name` or
+   `company_name` — if it does, report this to the client as a thin-line
+   violation
+
+5. The `key_quote` (if a user story section exists) appears verbatim and
+   unmodified in the edited brief
+
+If all checks pass:
+  Tell the client: "Edited brief complete. Saved to:
+  `clients/{company_id}/launches/{product_id}/briefs/{timestamp}/brief_edited.md`
+
+  Editor notes: `clients/{company_id}/launches/{product_id}/briefs/{timestamp}/editor_notes.md`"
+
+If any check fails:
+  Report which check failed and what was found.
+  Ask: "Fix and re-run the editor, or keep as-is?"
 
 Move to Step 9.
 
@@ -867,7 +989,7 @@ If verdict is APPROVED:
 - Always save every intermediate output before proceeding to the next step
 - raw_gold sentences may be rephrased for flow but their meaning and
   specificity must be preserved — never dilute or generalize
-- writing_guidance is a hard constraint for the Brief Writer
+- writing_guidance is a hard constraint for the Brief Writer and Brief Editor
 - If any agent fails: report the agent name and what input it received,
   then ask whether to retry or continue without that output
 - On re-runs: if product_profile.json exists → ask "re-extract or reuse?"

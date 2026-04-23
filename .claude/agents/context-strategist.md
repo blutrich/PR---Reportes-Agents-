@@ -408,6 +408,6 @@ Every key in this schema must appear in your output.
 
 1. Output the complete JSON object exactly as specified.
 2. Save it to:
-   `clients/{{company_id}}/launches/{{product_id}}/context_strategy.json`
+   `clients/{{company_id}}/launches/{{product_id}}/processed/context_strategy.json`
 3. Confirm the save with the exact file path.
 4. Output nothing else — no explanations, no commentary, no summary.

@@ -91,12 +91,27 @@ company_one_liner_mission
 spokesperson.name
 spokesperson.speaking_style
 stories_for_conversion
-product_preferred_terms
+brand_identity_vocabulary[]
+  ← Words and phrases that are core to the brand's identity.
+  ← Each entry: { "term": "...", "preferred_adjectives": [...], "forbidden_adjectives": [...] }
+  ← AI-derived by the Company Profiler from scraped content.
+  ← The client can override or extend via company_input.md (future) or
+    product_input.md (per-launch).
+  ← A launch may add new terms or append adjectives to existing terms
+    via launched_product_identity_vocabulary, but may never remove
+    company-level adjectives.
 search_config.geo_focus
 search_config.language_bias
 search_config.primary_geo
 writing_guidance.global_forbidden_words
 writing_guidance.global_tone_rules
+writing_guidance.global_term_substitutions[]
+  ← Word/phrase replacements that apply to all briefs.
+  ← Each entry: { "instead_of": "...", "say": "..." }
+  ← Client-defined only — the Company Profiler passes them through as-is.
+  ← Never extracted or inferred from scraped content.
+  ← Empty array if the client did not define any.
+  ← A launch may override or extend these via product_input.md.
 ```
 
 ### Layer B — Product Launch Profile (per-launch, built fresh each time)
@@ -198,6 +213,29 @@ writing_guidance
   writing_guidance.must_include[]
   writing_guidance.to_emphasize[]
     ← Primary destination for editorial_notes.md content
+  writing_guidance.term_substitutions[]
+    ← Merged from company-level global_term_substitutions and
+      launched_product_term_substitutions from product_input.md.
+    ← Each entry: { "instead_of": "...", "say": "..." }
+    ← Product-level entries override company-level for the same instead_of key.
+    ← After merging, the orchestrator checks for contradictions (circular
+      chains where a say value is another entry's instead_of). If found,
+      stops and reports to the client.
+    ← Empty array if neither source defines any.
+    ← Enforced by the Brief Writer as vocabulary preferences: whenever the
+      writer would naturally use an instead_of word, it uses the say word
+      instead, woven naturally into the sentence. The writer is not obligated
+      to use any say word — only to avoid instead_of words in the output.
+  writing_guidance.identity_vocabulary[]
+    ← Merged from company-level brand_identity_vocabulary and
+      launched_product_identity_vocabulary from the Launch Compactor.
+    ← Each entry: { "term": "...", "preferred_adjectives": [...], "forbidden_adjectives": [...] }
+    ← Product-level entries can add new terms or append adjectives to
+      existing company-level terms. Product level may never remove
+      company-level adjectives.
+    ← The Brief Writer uses preferred_adjectives when it naturally uses
+      an identity term — not obligated to use them otherwise. Forbidden
+      adjectives must never be paired with the term.
 ```
 
 ### Layer C — Research Output (built per-launch by research agents)
@@ -267,6 +305,10 @@ Populations the company does NOT serve (optional)
 ## Spokesperson
 Jane Doe, CEO
 
+## Term Substitutions
+instead_of: users | say: customers
+instead_of: artificial intelligence | say: AI
+
 ## Company URLs
 https://example.com
 https://example.com/about
@@ -278,6 +320,7 @@ Sections:
 - **Target Audience** — detailed description of who the company serves (required)
 - **Anti Target Audience** — populations to exclude from targeting (optional)
 - **Spokesperson** — full name and title, comma-separated (required)
+- **Term Substitutions** — word/phrase replacements for all briefs (optional). Format: `instead_of: X | say: Y`, one per line. Empty array if not defined.
 - **Company URLs** — one URL per line, all pages to scrape (at least one required)
 
 Rules:
@@ -290,18 +333,18 @@ Rules:
 ### Launch Input Files
 
 The client prepares up to four files before running `/new-launch`.
-All four are created automatically as commented templates in the launch folder
+All four are created automatically as commented templates in the `input/` subfolder
 on the first run if they don't exist. The client fills them in and runs again.
 
-All four files are created directly in the launch folder:
-`clients/{company_id}/launches/{product_id}/`
+All four files are created directly in the `input/` subfolder:
+`clients/{company_id}/launches/{product_id}/input/`
 There is no client-level staging and no file moving.
 
 ---
 
 ### launch_input.md — Sources
 
-**Location:** `clients/{company_id}/launches/{product_id}/launch_input.md`
+**Location:** `clients/{company_id}/launches/{product_id}/input/launch_input.md`
 **Purpose:** Tells the Orchestrator where to find the launch materials.
 `product_id` is passed as a command argument — it does not appear in this file.
 
@@ -330,7 +373,7 @@ Rules:
 
 ### product_input.md — Authoritative field overrides
 
-**Location:** `clients/{company_id}/launches/{product_id}/product_input.md`
+**Location:** `clients/{company_id}/launches/{product_id}/input/product_input.md`
 **Purpose:** Client-defined values that overwrite extracted values.
 These are authoritative — not suggestions.
 
@@ -338,6 +381,8 @@ These are authoritative — not suggestions.
 launched_product_name: Maple
 launched_product_differentiation_claim: The only tool that does X without requiring Y
 launched_product_value_proposition: ...
+term_substitution: instead_of: consulting | say: advisory
+term_substitution: instead_of: tool | say: service
 ```
 
 Override rules:
@@ -347,12 +392,16 @@ Override rules:
 4. Every field NOT defined here is left exactly as extracted — never touched by absence
 5. Lines starting with `#` are comments and are ignored
 6. Client-defined values are authoritative and are never questioned downstream
+7. `term_substitution` lines are not field overrides — they are collected separately
+   and merged with company-level `global_term_substitutions` in Step 3.
+   Product-level entries override company-level for the same `instead_of` key.
+   If no `term_substitution` lines exist — no `launched_product_term_substitutions` are added.
 
 ---
 
 ### editorial_notes.md — Emphasis directives
 
-**Location:** `clients/{company_id}/launches/{product_id}/editorial_notes.md`
+**Location:** `clients/{company_id}/launches/{product_id}/input/editorial_notes.md`
 **Purpose:** Concepts and angles the client wants emphasized in the brief
 that aren't explicitly stated in the launch materials.
 Every active line must be a complete, standalone directive.
@@ -373,7 +422,7 @@ Rules:
 
 ### user_stories_input.md — Customer testimonials, raw (optional)
 
-**Location:** `clients/{company_id}/launches/{product_id}/user_stories_input.md`
+**Location:** `clients/{company_id}/launches/{product_id}/input/user_stories_input.md`
 **Purpose:** Raw, unstructured customer testimonials in any format — WhatsApp
 messages, emails, survey responses, copied notes. The client pastes everything
 here without worrying about formatting.
@@ -418,7 +467,7 @@ a commented template. Client fills it in and runs again. Second run builds
 the company profile.
 
 **`/new-launch {company_id} {product_id}`** — first run creates four template
-files in the launch folder (`launch_input.md`, `product_input.md`,
+files in the `input/` folder (`launch_input.md`, `product_input.md`,
 `editorial_notes.md`, `user_stories_input.md`). Client fills them in and
 runs again. Second run executes the full pipeline.
 
@@ -433,13 +482,13 @@ Everything the Orchestrator needs comes from input files.
 INPUT: /new-launch {company_id} {product_id}
 │
 ├── STEP 0A — Setup check + file preparation ──────────────────────────
-│   Check: clients/{company_id}/launches/{product_id}/launch_input.md exists?
-│   NO  → Create all four template files in launch folder → stop → tell client to fill in
+│   Check: clients/{company_id}/launches/{product_id}/input/launch_input.md exists?
+│   NO  → Create all four template files in input/ folder → stop → tell client to fill in
 │   YES → parse launch_input.md sections
 │          → fetch ## Pages (WebFetch) + ## Google Doc (MCP)
 │          → collect ## Notes as-is
 │          → concatenate → raw_launch_text
-│          → save raw_launch_text.txt to launch folder
+│          → save raw_launch_text.txt to processed/ folder
 │
 ├── STEP 0B — Read editorial_notes.md ──────────────────────────────────
 │   Read file if exists → skip comment lines → collect as client_strategic_additions[]
@@ -481,7 +530,7 @@ INPUT: /new-launch {company_id} {product_id}
 │   Source 1: company_profile.writing_guidance (Layer A)
 │   Source 2: product_profile_raw.writing_guidance (Compactor)
 │   Source 3: editorial_notes.md directives → writing_guidance.to_emphasize
-│   Save complete product_profile.json to launch folder
+│   Save complete product_profile.json to processed/ folder
 │
 ├── STEP 4 — Assemble Context Strategist Input ────────────────────────
 │   Extract filtered slices from company_profile.json, product_profile.json,
@@ -507,9 +556,10 @@ INPUT: /new-launch {company_id} {product_id}
 │   └── Researcher C (thesis C + queries from context_strategy.json)
 │
 ├── STEP 7 — Wave Validator Agent → validated_waves.json
-├── STEP 8 — Brief Writer Agent → briefs/brief_final_*.md
+├── STEP 8 — Brief Writer Agent → briefs/{timestamp}/brief.md
+├── STEP 9 — Brief Editor Agent → briefs/{timestamp}/brief_edited.md + editor_notes.md
 │
-OUTPUT: briefs/brief_final_DD-MM-YYYY_HH-mm-ss.md
+OUTPUT: briefs/DD-MM-YYYY_HH-mm-ss/brief_edited.md
 ```
 
 ---
@@ -660,7 +710,7 @@ in the input was chosen because it helps the agent answer one question:
 - `functional_breakdown` → how the product works step by step. The strategist
   needs to know *what problem it solves*, not *how it works*.
 - `spokesperson`, `speaking_style` → relevant to the brief, not to the world.
-- `stories_for_conversion`, `product_preferred_terms` → marketing assets
+- `stories_for_conversion`, `brand_identity_vocabulary` → marketing assets
   for downstream agents.
 - `gaps[]`, `limitations[]` → orchestrator and brief-writer concerns.
 - `launched_product_name`, `launched_product_one_liner` → the agent should
@@ -757,7 +807,7 @@ researcher. If a thesis cannot be connected to the product's timeliness, it
 is the wrong thesis.
 
 **Output:** `context_strategy.json`
-**Saved to:** `clients/{company_id}/launches/{product_id}/context_strategy.json`
+**Saved to:** `clients/{company_id}/launches/{product_id}/processed/context_strategy.json`
 ```
 world_context_framing
   .structural_forces[]
@@ -877,7 +927,7 @@ interesting but does not sharpen the product's timeliness is weak evidence.
 **Input:** One thesis from `context_strategy.json` + minimal product context
 (see CLAUDE.md Step 6 for the full input assembly).
 **Output:** `wave_candidate_{A|B|C}.json`
-**Saved to:** `clients/{company_id}/launches/{product_id}/wave_candidate_{A|B|C}.json`
+**Saved to:** `clients/{company_id}/launches/{product_id}/processed/wave_candidate_{A|B|C}.json`
 
 ```
 wave_candidate
@@ -1068,7 +1118,7 @@ For surviving waves, the Validator:
 ---
 
 **Output:** `validated_waves.json`
-**Saved to:** `clients/{company_id}/launches/{product_id}/validated_waves.json`
+**Saved to:** `clients/{company_id}/launches/{product_id}/processed/validated_waves.json`
 
 The output carries forward the **full wave data** from each surviving wave —
 wave_narrative, evidence_details (URLs, key_points, source_name, date),
@@ -1161,7 +1211,16 @@ document.
 
 **Global constraints (apply to every section):**
 - `{{writing_guidance}}` is a hard constraint on every sentence — forbidden
-  words must never appear, tone rules must be followed, framing rules apply
+  words must never appear, tone rules must be followed, framing rules apply,
+  and term substitutions must be respected (whenever the writer would naturally
+  use an `instead_of` word, it uses the `say` word instead, woven naturally
+  into the text — but using `say` words is not obligatory, only avoiding
+  `instead_of` words is)
+- `{{writing_guidance.identity_vocabulary}}` defines the brand's core terms
+  with their preferred and forbidden adjectives. When the writer naturally
+  uses an identity term, it should reach for the preferred adjectives and
+  never pair it with a forbidden adjective. The writer is not obligated to
+  use any identity term — only to respect the adjective rules when it does.
 - `{{company_industry}}` is provided so the agent knows what type of
   journalist it is writing for
 - All output must be in the same language as the source material
@@ -1200,20 +1259,26 @@ fewer competing signals, the sharper the headline.
 
 **Section 2 — Subheadline**
 
-**Job:** Ground the headline with the full picture — one to two sentences
-that give the journalist the context, the launch, and the outcome. This is
-the elevator pitch: why now + what the company is doing + how it works +
-what changes.
+**Job:** Ground the headline in specifics. Give the journalist the core
+picture in one breath: who is behind this, what they're launching, and
+why it matters now. Clarity over completeness — details belong in Section 4.
 
-**Inputs:**
+**Mandatory inputs:**
 - `{{company_name}}` — who is launching
-- `{{top_level_issue}}` — the context that makes this timely
 - `{{launched_product_name}}` — what is being launched
+
+**Draw from (use what serves the sentence, leave the rest for Section 4):**
+- `{{top_level_issue}}` — the context that makes this timely
 - `{{launched_product_one_liner}}` — the short description of the launch
 - `{{launched_product_target_audience}}` — who this is for
 - `{{launched_product_differentiation_claim}}` — the mechanism (what's new)
 - `{{launched_product_functional_breakdown.user_benefit}}` — the outcome
 - `{{company_industry}}` — journalist context
+
+**Structural rule:** Each sentence carries one idea. Never stack clauses
+("ש-...ו-...ש-..." / "that...and...which..."). A sentence that tries to
+describe the product, its mechanism, its audience, and its differentiation
+in one breath is banned — that's a paragraph pretending to be a sentence.
 
 ---
 
@@ -1374,8 +1439,8 @@ All sections receive `writing_guidance` (forbidden_words, tone_rules, framing_ru
 
 #### Output
 
-**File:** `brief_final_DD-MM-YYYY_HH-mm-ss.md`
-**Saved to:** `clients/{company_id}/launches/{product_id}/briefs/brief_final_DD-MM-YYYY_HH-mm-ss.md`
+**File:** `brief.md`
+**Saved to:** `clients/{company_id}/launches/{product_id}/briefs/{timestamp}/brief.md`
 The `briefs/` folder is created by the Orchestrator in Step 0A.
 The timestamp is the current date and time when the brief is generated.
 **Format:** Markdown. The headline is the `#` heading with the subheadline
@@ -1407,6 +1472,213 @@ long enough to make the case completely.
 
 ---
 
+### AGENT 7 — Brief Editor
+
+**File:** `.claude/agents/brief-editor.md`
+**Runs:** After the Brief Writer (Step 8) completes. This is Step 9.
+**Tools:** None — pure editing. No web access, no search, no new content.
+
+**Prompt law:** No company names, product names, industry terms, or
+client-specific language. All specifics enter via variables at runtime.
+
+**Job:** Copy-edit the finished brief so that every sentence reads as if a
+senior native-language journalist wrote it — natural, sharp, and immediately
+understandable by anyone. A person with no background in the industry should
+read this brief and understand every sentence on the first pass.
+
+This agent is the final quality gate. It catches what the Brief Writer
+misses at the sentence level: unnatural phrasing, awkward prepositions,
+sentences that land at "good" instead of "great," ideas that deserve a
+stronger ending, and language that sounds translated rather than native.
+
+**Why a separate agent:** The Brief Writer juggles structure, wave
+integration, writing guidance, term substitutions, section constraints, and
+narrative arc. Asking it to also be a world-class copy editor is asking one
+agent to do two cognitive jobs. The editor works on the finished artifact
+with one focus: make every sentence land.
+
+**The dual lens — Senior Copy Editor × Persuasion Craft:**
+
+This is not a conventional copy editor. It operates with two simultaneous
+lenses:
+
+**Lens 1 — Senior Copy Editor:**
+The classic editorial eye. Grammar, syntax, preposition accuracy, sentence
+completeness, natural word order in the target language. Every sentence
+must read as if written by a native speaker for a mainstream newspaper —
+no translated phrasing, no literary constructions that require re-reading,
+no incomplete thoughts.
+
+**The everyday language rule is paramount:** The brief must be readable by
+a common person — not just by journalists or industry professionals. No
+sophisticated vocabulary, no jargon, no phrases that assume background
+knowledge. If a word has a simpler synonym that carries the same meaning —
+use the simpler one. The test: would a person reading a free daily newspaper
+on the bus understand this sentence without pausing? If not — simplify.
+
+**Lens 2 — Persuasion Craft (inspired by Alex Hormozi's writing principles):**
+The brief is not just journalism — it must make a journalist want to write
+this story. The editor applies specific persuasion techniques at the
+sentence level — through *structure*, not through sophisticated vocabulary:
+
+- **Sentence rhythm:** Vary sentence length deliberately. Two short
+  punchy sentences followed by a longer explanatory one creates momentum.
+  Monotonous sentence length kills reader energy.
+- **Contrast and antithesis:** Pair the obvious with the non-obvious.
+  "Everyone knows X. Almost no one realizes Y." The familiar-to-surprising
+  arc makes insights feel earned, not asserted. Use simple words to
+  create the contrast — the power comes from the structure, not the
+  vocabulary.
+- **Specificity over abstraction:** Vague claims get ignored; specific
+  claims get believed. If a sentence uses abstract language where a
+  concrete detail exists in the brief's data — tighten it.
+- **Sentence endings:** The last word of a sentence carries disproportionate
+  weight. If a sentence ends on a functional word (preposition, connector)
+  or a weak word when a stronger alternative exists — restructure so it
+  lands on the word that hits hardest.
+- **Damaging admissions:** Where the spokesperson quote or product section
+  acknowledges a hard truth, lean into it — don't soften it. Honesty is
+  more persuasive than polish.
+- **"Why now" sharpening:** Every sentence in the zeitgeist should make
+  the reader feel the urgency is real and immediate, not theoretical.
+  Tighten any sentence that reads as a general observation into one that
+  reads as a current pressure.
+
+**What the Persuasion Lens does NOT do:**
+- No sales pressure tactics (fear of missing out, urgency tricks, "act now"
+  language) — journalists detect and reject these instantly
+- No unbundling/merism (listing every sub-component) — this creates bloat
+  in a 600–800 word brief
+- No objection handling — the brief informs, it does not close a sale
+- No hype language ("revolutionary," "game-changing," "unprecedented")
+- No elevated vocabulary — persuasion comes from sentence structure and
+  rhythm, never from fancy words. Every word must be plain and everyday.
+
+The persuasion lens makes sentences *land harder* — it does not turn
+journalism into marketing, and it does not make language more sophisticated.
+
+---
+
+**The Content Boundary — Absolute:**
+
+The editor may reshape language. It may NOT reshape meaning.
+
+Specifically:
+- **May change:** word choice (toward simpler alternatives), sentence
+  structure, word order, prepositions, punctuation, rhythm, sentence
+  endings, paragraph transitions
+- **May NOT change:** facts, statistics, names, URLs, citations, quotes
+  (key_quote is verbatim), section order, which ideas appear in which
+  section, the overall argument or narrative arc
+- **May NOT add:** new ideas, new claims, new evidence, new sections
+- **May NOT remove:** ideas, evidence, citations, or data points — only
+  rephrase how they are expressed
+- The `key_quote` in the user story section is verbatim and must not be
+  touched in any way
+
+If a sentence has a content problem (wrong fact, missing citation, weak
+evidence), the editor flags it in the editor notes — it does not fix
+content problems by rewriting.
+
+---
+
+**Input:**
+
+- `{{brief_text}}` — The complete brief output from the Brief Writer
+- `{{writing_guidance}}` — The full writing_guidance object (forbidden words,
+  tone rules, framing rules, must_include, to_emphasize, term_substitutions,
+  identity_vocabulary). The editor enforces these with the same rigor as
+  the Brief Writer — this is a second pass, not a relaxed one.
+- `{{content_language}}` — The language of the brief (e.g., "Hebrew",
+  "English"). Tells the editor which language's grammar, idioms, and
+  natural phrasing to optimize for.
+- `{{company_name}}` — Needed to verify the thin line rule in the zeitgeist
+- `{{launched_product_name}}` — Needed to verify the thin line rule in
+  the zeitgeist
+
+---
+
+**Editing Passes:**
+
+The editor works in three sequential passes on the same document:
+
+**Pass 1 — Language correctness:**
+- Fix grammar errors, missing or incorrect prepositions (e.g., "את" in Hebrew)
+- Fix unnatural word order
+- Fix sentences that sound translated from another language
+- Fix incomplete sentences or thoughts that trail off
+- Replace sophisticated or uncommon words with simpler everyday alternatives
+- Ensure every sentence is understandable on first read by a non-expert
+
+**Pass 2 — Sentence craft (persuasion lens):**
+- Apply sentence rhythm variation (short-short-long pattern where it
+  improves flow)
+- Strengthen sentence endings — restructure so the last word carries weight
+- Sharpen contrast and antithesis where the idea already exists but the
+  structure doesn't deliver it
+- Tighten abstract language into specific language where the data supports it
+- Ensure the zeitgeist builds urgency, not just describes a situation
+- All improvements must use plain, everyday vocabulary — never elevate
+  the language level
+
+**Pass 3 — Constraint verification:**
+- No `global_forbidden_words` in the output
+- No `instead_of` terms from `term_substitutions` in the output
+- `identity_vocabulary` adjective rules respected
+- Thin line intact: zeitgeist does not mention `{{launched_product_name}}`
+  or `{{company_name}}`
+- `key_quote` still appears verbatim
+- Brief length still within 600–800 words
+- All citations and URLs intact
+
+---
+
+**Output:**
+
+Two outputs, always:
+
+1. **The edited brief** — saved to the same `briefs/` folder with a
+   distinct filename:
+   `brief_edited.md`
+   **Saved to:** `clients/{company_id}/launches/{product_id}/briefs/{timestamp}/brief_edited.md`
+   Lives in the same timestamp subfolder as the original brief.
+
+2. **Editor notes** — always created alongside the edited brief. Saved as:
+   `clients/{company_id}/launches/{product_id}/briefs/{timestamp}/editor_notes.md`
+
+   Contains two sections:
+
+   **## Changes Made**
+   A numbered list of every change the editor made. Each entry states:
+   - The section where the change was made
+   - What the original text was (quoted)
+   - What it was changed to (quoted)
+   - Why — which lens triggered this change (language correctness,
+     sentence craft, or constraint verification) and a brief explanation
+
+   **## Content Flags** (only if applicable)
+   Issues the editor found but cannot fix because they are content-level
+   problems: wrong facts, missing citations, weak evidence, structural
+   concerns. Each flag describes: what the issue is, where it is (section
+   + sentence), and why the editor flagged it. If no content issues were
+   found, this section contains "No content issues found."
+
+---
+
+**What this agent does NOT do:**
+
+- Does not change the meaning of any sentence
+- Does not add or remove ideas, evidence, or sections
+- Does not touch the `key_quote` — it is verbatim from a real person
+- Does not override `writing_guidance` constraints
+- Does not search the web or add new information
+- Does not receive product_profile.json, validated_waves.json, or any
+  upstream data — it works only from the finished brief text
+- Does not make strategic or editorial decisions — those were made upstream
+- Does not elevate vocabulary — only simplifies it
+
+---
+
 ## File Structure
 
 ```
@@ -1423,7 +1695,8 @@ project-root/
 │   │   ├── context-strategist.md
 │   │   ├── researcher.md          ← one prompt, called 3× with different inputs
 │   │   ├── wave-validator.md
-│   │   └── brief-writer.md
+│   │   ├── brief-writer.md
+│   │   └── brief-editor.md
 │   │
 │   └── commands/
 │       ├── new-client.md
@@ -1435,20 +1708,27 @@ project-root/
 │       ├── company_profile.json               ← Layer A, persisted
 │       └── launches/
 │           └── {product_id}/
-│               ├── launch_input.md            ← created on first run
-│               ├── product_input.md           ← created on first run
-│               ├── editorial_notes.md         ← created on first run
-│               ├── user_stories_input.md      ← created on first run, raw testimonials
-│               ├── user_stories.json          ← structured by User Story Parser
-│               ├── raw_launch_text.txt
-│               ├── raw_gold.json
-│               ├── product_profile_raw.json
-│               ├── product_profile.json       ← Layer B, final, editable
-│               ├── context_strategy.json
-│               ├── wave_candidates_raw.json
-│               ├── validated_waves.json       ← Layer C
+│               ├── input/
+│               │   ├── launch_input.md            ← created on first run
+│               │   ├── product_input.md           ← created on first run
+│               │   ├── editorial_notes.md         ← created on first run
+│               │   └── user_stories_input.md      ← created on first run, raw testimonials
+│               ├── processed/
+│               │   ├── raw_launch_text.txt
+│               │   ├── raw_gold.json
+│               │   ├── product_profile_raw.json
+│               │   ├── product_profile.json       ← Layer B, final, editable
+│               │   ├── context_strategy.json
+│               │   ├── wave_candidate_A.json
+│               │   ├── wave_candidate_B.json
+│               │   ├── wave_candidate_C.json
+│               │   ├── validated_waves.json       ← Layer C
+│               │   └── user_stories.json          ← structured by User Story Parser
 │               ├── briefs/
-│               │   └── brief_final_DD-MM-YYYY_HH-mm-ss.md  ← final deliverable (timestamped)
+│               │   └── DD-MM-YYYY_HH-mm-ss/
+│               │       ├── brief.md                         ← raw brief from Brief Writer
+│               │       ├── brief_edited.md                  ← edited brief from Brief Editor (final deliverable)
+│               │       └── editor_notes.md                  ← changelog + content flags
 │
 └── schemas/
     ├── company_profile.schema.json
@@ -1475,10 +1755,10 @@ Output: `clients/{company_id}/company_profile.json`.
 Triggers the full launch flow. Requires an existing company profile —
 if none exists, the Orchestrator tells the client to run `/new-client` first.
 
-Reads input files from `clients/{company_id}/launches/{product_id}/`.
-First run creates four template files in the launch folder and stops.
+Reads input files from `clients/{company_id}/launches/{product_id}/input/`.
+First run creates four template files in the `input/` folder and stops.
 Second run executes the full pipeline.
-Output: `briefs/brief_final_DD-MM-YYYY_HH-mm-ss.md` + all intermediates saved.
+Output: `briefs/{timestamp}/brief_edited.md` + all intermediates saved.
 
 ---
 

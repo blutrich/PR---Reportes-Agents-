@@ -1,0 +1,39 @@
+{
+  "raw_gold": [
+    {
+      "text": "רוב הישראלים לא סובלים מחוסר במידע פיננסי, אלא מ\"ערפל כלכלי\". האפליקציות הבנקאיות מציגות הררי נתונים, אך לא מספקות שורה תחתונה או תחושת שליטה.",
+      "source": "Client Notes",
+      "type": "hook",
+      "strength": 5,
+      "usage_note": "Opening line for a brief or zeitgeist paragraph — reframes the problem away from data scarcity toward emotional fog."
+    },
+    {
+      "text": "בנינו כלי שמציג מידע בצורה טובה יותר — בעוד שהבעיה האמיתית של הלקוח היא שאין לו מישהו שיגיד לו מה לעשות עם המידע הזה.",
+      "source": "Client Notes",
+      "type": "insight",
+      "strength": 5,
+      "usage_note": "Self-aware pivot sentence explaining the shift from dashboard to conversation. Perfect for a spokesperson quote."
+    },
+    {
+      "text": "פשטות מנצחת אנליזה.",
+      "source": "Client Notes",
+      "type": "hook",
+      "strength": 5,
+      "usage_note": "Three-word manifesto. Extremely versatile as headline, pull quote, or section header."
+    },
+    {
+      "text": "כמעט מחצית ממשקי הבית בישראל חיים במינוס כרוני — לא כי הם בזבזנים, אלא כי המערכת לא עוזרת להם לנהל את הפער.",
+      "source": "Client Notes",
+      "type": "insight",
+      "strength": 5,
+      "usage_note": "Reframes chronic overdraft from personal blame to systemic failure."
+    },
+    {
+      "text": "כל ה-UI בעולם לא מחליף שיחה. והדרך היחידה לגשר בין הנתון לבין ההחלטה — היא לתת ללקוח לשאול בשפה שלו ולקבל תשובה בשפה שלו.",
+      "source": "Client Notes",
+      "type": "claim",
+      "strength": 5,
+      "usage_note": "Clearest articulation of why conversational AI is the answer."
+    }
+  ]
+}
